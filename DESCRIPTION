@@ -1,0 +1,21 @@
+Package: demuxmix
+Title: Demultiplexing hashtagged cells using regression mixture models
+Version: 0.99.0
+Date: 2021-07-30
+Description: A package for demultiplexing single-cell sequencing experiments
+    of pooled cells that were labelled with barcoded antibodies. The package
+    provides methods to fit mixture models for a probabilistic classification
+    of the cells and to assess the quality and error rates of the
+    demultiplexing.
+Authors@R: person("Hans-Ulrich", "Klein",
+    email = "hansulrich.klein@gmail.com",
+    role = c("aut", "cre"),
+    comment = c(ORCID = "0000-0002-6382-9428"))
+License: CC-BY-SA-NC
+Imports: stats, MASS, Matrix, ggplot2, gridExtra
+Suggests: BiocStyle, knitr, rmarkdown
+VignetteBuilder: knitr
+biocViews: SingleCell, Preprocessing, Classification
+BiocType: Software
+URL: https://github.com/cu-ctcn/demuxmix
+RoxygenNote: 7.1.1

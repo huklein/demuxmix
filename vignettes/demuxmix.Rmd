@@ -1,0 +1,26 @@
+---
+title: "Demultiplexing cells with demuxmix"
+author:
+- name: Hans-Ulrich Klein
+  affiliation: Columbia University Irving Medical Center, New York, NY
+output:
+  BiocStyle::html_document:
+    toc_float: true
+  BiocStyle::pdf_document: default
+package: BiocStyle
+vignette: >
+  %\VignetteIndexEntry{Demultiplexing cells with demuxmix}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(demuxmix)
+```
