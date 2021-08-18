@@ -18,4 +18,5 @@ VignetteBuilder: knitr
 biocViews: SingleCell, Preprocessing, Classification
 BiocType: Software
 URL: https://github.com/cu-ctcn/demuxmix
+Encoding: UTF-8
 RoxygenNote: 7.1.1

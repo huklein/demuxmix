@@ -2,6 +2,7 @@
 
 export(demuxmix)
 export(dmmOverlap)
+export(dmmSimulateHto)
 export(dmmSummary)
 export(plotDmmHistogram)
 export(plotDmmPosteriorP)
@@ -31,4 +32,5 @@ importFrom(stats,predict)
 importFrom(stats,qnbinom)
 importFrom(stats,quantile)
 importFrom(stats,residuals)
+importFrom(stats,rnbinom)
 importFrom(stats,var)

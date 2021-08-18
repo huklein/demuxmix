@@ -19,8 +19,8 @@ dmmPreprocess <- function(hto, rna, k.hto=1.5, k.rna=1.5) {
   
   # RNA outliers
   if (missing(rna)) {
-    if (sum(outlierHto)/length(outlierHto) >= 0.01) {
-      warning("More than 1% of the cells have been identified as outliers and excluded from model fitting. Consider increasing k.hto and check the initial clustering by demuxmix:::dmmPreprocess.")
+    if (sum(outlierHto)/length(outlierHto) >= 0.03) {
+      warning("More than 3% of the cells have been identified as outliers and excluded from model fitting. Consider increasing k.hto and check the initial clustering by demuxmix:::dmmPreprocess.")
     }
     return(data.frame(hto=hto, cluster=clusterInit, outlier=outlierHto))
   } else {
@@ -145,7 +145,7 @@ dmmFit <- function(hto, rna, clusterInit, tol=10^-5, maxIter=100) {
 
 # Internal method dmmClassify
 #' @importFrom stats dnbinom pnbinom predict
-dmmClassify <- function(hto, rna, mModel, p.acpt=0.9, alpha=0.9, beta=0.9, classifyTails=TRUE) {
+dmmClassify <- function(hto, rna, mModel, alpha=0.9, beta=0.9, correctTails=TRUE) {
   
   stopifnot(all(!is.na(hto)))
   if (missing(rna)) {
@@ -173,32 +173,31 @@ dmmClassify <- function(hto, rna, mModel, p.acpt=0.9, alpha=0.9, beta=0.9, class
   f[, 2] <- dnbinom(hto, mu=mu2, size=theta2)
   pi.f <- t(pi * t(f))
   posteriorP <- (pi.f / apply(pi.f, 1, sum))[, 2]
-  Pneg.grX <- pnbinom(hto, mu=mu1, size=theta1, lower.tail=FALSE)
-  Ppos.smX <- pnbinom(hto, mu=mu2, size=theta2, lower.tail=TRUE)
+  Pneg.grX <- pnbinom(hto - 1, mu=mu1, size=theta1, lower.tail=FALSE)  # P(X >= x)
+  Ppos.smX <- pnbinom(hto, mu=mu2, size=theta2, lower.tail=TRUE)       # P(X <= x)
+  posteriorP[is.na(posteriorP) & Ppos.smX == 1] <- 1  # Extreme large HTO counts where both components have P(X=x) = 0
+  stopifnot(!any(is.na(posteriorP)))
   
-  classification <- rep("uncertain", length(hto))
-  classification[posteriorP >= p.acpt] <- "positive"
-  classification[posteriorP < 1 - p.acpt] <- "negative"
-  if (classifyTails) {
-    ind <- classification %in% c("positive", "uncertain") & Pneg.grX > alpha # positive component with heavy left tail
-    classification[ind] <- "negative"
+  tailException <- rep(FALSE, length(hto))
+  if (correctTails) {  # adjust posterior probability
+    ind <- posteriorP >= 0.5 & Pneg.grX > alpha # positive component with heavy left tail
+    tailException[ind] <- TRUE
     posteriorP[ind] <- 0
-    ind <- classification %in% c("negative", "uncertain") & Ppos.smX > beta  # negative component with heavy right tail (never observed in real data)
-    classification[ind] <- "positive"
+    ind <- posteriorP < 0.5 & Ppos.smX > beta  # negative component with heavy right tail (never observed in real data)
+    tailException[ind] <- TRUE
     posteriorP[ind] <- 1
-  } else {
-    classification[classification == "positive" & Pneg.grX > alpha] <- "uncertain"
-    classification[classification == "negative" & Ppos.smX > beta] <- "uncertain"
+  } else {             # just note the problematic classifications but don't correct anything
+    tailException[posteriorP >= 0.5 & Pneg.grX > alpha] <- TRUE
+    tailException[posteriorP < 0.5 & Ppos.smX > beta] <- TRUE
   }
 
-  classRes <- data.frame(class=classification, posteriorP=posteriorP,
-                         Pneg.grX=Pneg.grX, Ppos.smX=Ppos.smX)
+  classRes <- data.frame(posteriorP=posteriorP, Pneg.grX=Pneg.grX, Ppos.smX=Ppos.smX, tailException=tailException)
   return(classRes)
 }
 
 
 # Internal method .demuxmix
-.demuxmix <- function(object, rna, p.acpt=0.9, alpha=0.9, beta=0.9, classifyTails=TRUE, tol=10^-5, maxIter=100, k.hto=1.5, k.rna=1.5) {
+.demuxmix <- function(object, rna, p.acpt=0.9, alpha=0.9, beta=0.9, correctTails=TRUE, tol=10^-5, maxIter=100, k.hto=1.5, k.rna=1.5) {
   
   # Check parameters
   n <- nrow(object)
@@ -218,9 +217,9 @@ dmmClassify <- function(hto, rna, mModel, p.acpt=0.9, alpha=0.9, beta=0.9, class
   if (length(beta) == 1) {
     beta <- rep(beta, n)
   }
-  stopifnot(length(classifyTails) == 1 | length(classifyTails) == n)
-  if (length(classifyTails) == 1) {
-    classifyTails <- rep(classifyTails, n)
+  stopifnot(length(correctTails) == 1 | length(correctTails) == n)
+  if (length(correctTails) == 1) {
+    correctTails <- rep(correctTails, n)
   }
   stopifnot(length(tol) == 1 | length(tol) == n)
   if (length(tol) == 1) {
@@ -249,7 +248,7 @@ dmmClassify <- function(hto, rna, mModel, p.acpt=0.9, alpha=0.9, beta=0.9, class
                             clusterInit=prepData$cluster[!prepData$outlier], tol=tol[i], maxIter=maxIter[i])
       mModel[[i]]$htoId <- rownames(object)[i]
       classRes[[i]] <- dmmClassify(hto=prepData$hto, rna=prepData$rna, mModel=mModel[[i]],
-                                   p.acpt=p.acpt, alpha=alpha[i], beta=beta[i], classifyTails=classifyTails[i])
+                                   alpha=alpha[i], beta=beta[i], correctTails=correctTails[i])
       colnames(classRes[[i]]) <- paste(rownames(object)[i], colnames(classRes[[i]]), sep=".")
     } else {
       prepData <- dmmPreprocess(object[i, ], k.hto=k.hto[i], k.rna=k.rna[i])
@@ -257,15 +256,15 @@ dmmClassify <- function(hto, rna, mModel, p.acpt=0.9, alpha=0.9, beta=0.9, class
                             clusterInit=prepData$cluster[!prepData$outlier], tol=tol[i], maxIter=maxIter[i])
       mModel[[i]]$htoId <- rownames(object)[i]
       classRes[[i]] <- dmmClassify(hto=prepData$hto, mModel=mModel[[i]],
-                                   p.acpt=p.acpt[i], alpha=alpha[i], beta=beta[i], classifyTails=classifyTails[i])
+                                   alpha=alpha[i], beta=beta[i], correctTails=correctTails[i])
       colnames(classRes[[i]]) <- paste(rownames(object)[i], colnames(classRes[[i]]), sep=".")
     }
   }
   names(mModel) <- rownames(object)
   
   # Combine results from all hashtags
-  results <- do.call(cbind, classRes)
-  posteriorP <- results[, paste(rownames(object), "posteriorP", sep="."), drop=FALSE]
+  htoResults <- do.call(cbind, classRes)
+  posteriorP <- htoResults[, paste(rownames(object), "posteriorP", sep="."), drop=FALSE]
   mlClassMat <- posteriorP >= 0.5
   posteriorP[!mlClassMat] <- 1 - posteriorP[!mlClassMat]
   mlClass <- apply(mlClassMat, 1, function(c) {return(paste(rownames(object)[c], collapse=","))})
@@ -275,10 +274,9 @@ dmmClassify <- function(hto, rna, mModel, p.acpt=0.9, alpha=0.9, beta=0.9, class
   class <- mlClass
   class[mlClassP < p.acpt] <- "uncertain"
   classification <- data.frame(class=class, mlClass=mlClass, mlClassP=mlClassP, mlClassType=mlClassType, stringsAsFactors=FALSE)
-  classification <- cbind(classification, results)
   
-  parameters=list(p.acpt=p.acpt, alpha=alpha, beta=beta, classifyTails=classifyTails, tol=tol, maxIter=maxIter, k.hto=k.hto, k.rna=k.rna)
-  return(list(results=classification, model=mModel, parameters=parameters))
+  parameters <- list(p.acpt=p.acpt, alpha=alpha, beta=beta, correctTails=correctTails, tol=tol, maxIter=maxIter, k.hto=k.hto, k.rna=k.rna)
+  return(list(results=classification, htoResults=htoResults, model=mModel, parameters=parameters))
 }
 
 

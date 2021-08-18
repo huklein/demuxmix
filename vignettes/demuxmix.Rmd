@@ -21,6 +21,31 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Introduction
+
+The package demuxmix ...
+
+
+# Quick start
+
 ```{r setup}
 library(demuxmix)
+library(SingleCellExperiment)
+library(DropletUtils)
+library(scuttle)
+library(scRNAseq)
+library(ggplot2)
+
+
+htoExp <- StoeckiusHashingData(type="mixed")
+eDrops <- emptyDrops(counts(htoExp))
+htoExp <- htoExp[, which(eDrops$FDR <= 0.001)]
+
+```
+
+```{r setup2}
+qc <- perCellQCMetrics(htoExp)
+dmm <- demuxmix(assay(altExp(htoExp)), rna=qc$detected)
+dmmSummary(dmm$results)
+plotDmmHistogram(dmm$model[[1]], binwidth = 1) + coord_cartesian(ylim=c(0, 0.02), xlim=c(0, 150))
 ```
