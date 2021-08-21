@@ -193,11 +193,132 @@ setGeneric("demuxmix",
              standardGeneric("demuxmix"),
            signature=c("object", "rna"))
 
+
+
+#' Calculate area intersected by two components of a mixture model
+#' 
+#' \code{dmmOverlap} integrates over the area intersected by the two
+#' components of the given mixture model. The integral should be
+#' close to 0 if the HTO labeling experiment was successful.
+#'
+#' @param model A mixture model or a list of mixture models as
+#'   returned by \code{\link{demuxmix}}.
+#' @param tol The maximum acceptable error when calculating the
+#'   area.
+#'   
+#' @details The area under both the negative and positive component is an
+#'   informative quality metric for the hashtag labeling efficiency. Values
+#'   under 0.03 can be considered as good, values larger than 0.1 are
+#'   problematic.
+#'   
+#'   The definition of the area is not obvious for a regression mixture
+#'   model since the distributions' means depend on the covariate, i.e.,
+#'   the number of detected genes in the RNA library. This method 
+#'   calculates the weighted mean number of detected genes in the cells
+#'   for each component, which are then used to calculate the expected
+#'   number of HTO counts for the negative and positive component.
+#' 
+#' @return A numeric vector with the intersection area for each given
+#'   mixture model.
+#' 
+#' @seealso \code{\link{demuxmix}}
+#' 
+#' @examples 
+#' set.seed(2642)
+#' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+#'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
+#' 
+#' dmm <- demuxmix(simdata$hto, p.acpt=0.9)
+#' dmmOverlap(dmm$model)
+#' 
+#' dmmreg <- demuxmix(simdata$hto, rna=simdata$rna, p.acpt=0.9)
+#' dmmOverlap(dmmreg$model)
+#' dmmOverlap(dmmreg$model[["HTO_1"]])
+#' 
+#' @aliases dmmOverlap,list-method
+#' 
 #' @export
 setGeneric("dmmOverlap",
            function(model, tol=0.001)
             standardGeneric("dmmOverlap"),
            signature="model")
+
+
+
+#' Simulate HTO sequencing data
+#' 
+#' This method simulates HTO count data and corresponding numbers of detected
+#' RNA features using the negative binomial distribution. The purpose of this
+#' method is to provide simple example datasets for testing and documentation.
+#'
+#' @param class A \code{matrix} of type logical defining the number of
+#'   hashtags, the number of cells, and the cells' class memberships, i.e.,
+#'   which cells have been tagged with which hashtag. Each row corresponds
+#'   to one hashtag and each column to a cell. Negative cells (all entries
+#'   in the column are \code{FALSE}) and multiplets (more than one entry are
+#'   \code{TRUE}) are allowed. If the matrix has row names, the names must be
+#'   unique and are used as hashtag names.
+#' @param mu Vector of expectation values of the HTO counts if a
+#'   cell is positive for the hashtag. Values are recycled if \code{mu} is
+#'   shorter than number of hashtags defined by \code{class}.
+#' @param theta Vector of dispersion parameters of the HTO counts if a
+#'   cell is positive for the hashtag. Values are recycled if \code{theta} is
+#'   shorter than number of hashtags defined by \code{class}.
+#' @param muAmbient Vector of expectation values of the HTO counts if a
+#'   cell is negative for the hashtag. Values are recycled if \code{mu} is
+#'   shorter than number of hashtags defined by \code{class}.
+#' @param thetaAmbient Vector of dispersion parameters of the HTO counts if a
+#'   cell is negative for the hashtag. Values are recycled if \code{theta} is
+#'   shorter than number of hashtags defined by \code{class}.
+#' @param muRna Single expectation value for the number of detected RNA
+#'   features.
+#' @param thetaRna Single dispersion parameter for the number of detected RNA
+#'   features.
+#'
+#' @details A vector \eqn{r} of detected RNA features (same length as columns
+#'   in \code{class}) is simulated using \code{\link[stats]{rnbinom}} with
+#'   \code{muRna} and \code{thetaRna} as parameters. HTO counts of positive
+#'   cells are then simulated using \code{\link[stats]{rnbinom}} with 
+#'   \eqn{r} \code{mu}/\code{muRna} as expectation value and \code{theta}
+#'   as dispersion. If a cell is negative for the hastag,
+#'   \eqn{r} \code{muAmbient}/\code{muRna} and \code{thetaAmbient}
+#'   are used respectively.
+#' 
+#' @return A list with three elements: "hto" is a matrix of same dimension as
+#'   the given \code{class} matrix and contains the simulated HTO counts.
+#'   "rna" is a vector of simulated detected number of genes (same length as
+#'   "hto" has columns). "groundTruth" is a character vector encoding the
+#'   class labels given by \code{class} as character strings for convenience.
+#' 
+#' @examples
+#' set.seed(2642)
+#' class <- rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+#'                c(rep(FALSE, 200), rep(TRUE, 220)))
+#' simdata <- .dmmSimulateHto(class=class, mu=c(150, 300), theta=c(15, 20),
+#'                           muAmbient=c(30, 30), thetaAmbient=c(10, 10),
+#'                           muRna=3000, thetaRna=30)
+#' dim(simdata$hto)
+#' table(simdata$groundTruth)
+#' 
+#' mean(simdata$rna) # muRna
+#' var(simdata$rna)  # muRna + muRna^2/thetaRna
+#' 
+#' mean(simdata$hto[1, class[1, ]])  # mu[1]
+#' mean(simdata$hto[1, !class[1, ]]) # muAmbient[1]
+#' var(simdata$hto[1, class[1, ]])   # > mu[1] + mu[1]^2/theta[1]
+#' 
+#' 
+#' cor(simdata$rna[class[1, ]], simdata$hto[1, class[1, ]])
+#' 
+#' @aliases dmmSimulateHto,matrix-method
+#' 
+#' @export
+setGeneric("dmmSimulateHto",
+           function(class, mu=180, theta=15, muAmbient=30, thetaAmbient=10, muRna=3000, thetaRna=30)
+             standardGeneric("dmmSimulateHto"),
+           signature="class")
+
+
 
 #' @export
 setGeneric("dmmSummary",
@@ -205,11 +326,6 @@ setGeneric("dmmSummary",
              standardGeneric("dmmSummary"),
            signature="dmmResults")
 
-#' @export
-setGeneric("dmmSimulateHto",
-           function(class, mu=180, theta=15, muAmbient=30, thetaAmbient=10, muRna=3000, thetaRna=30)
-             standardGeneric("dmmSimulateHto"),
-           signature="class")
 
 #' @export
 setGeneric("plotDmmHistogram",
