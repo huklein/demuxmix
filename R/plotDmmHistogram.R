@@ -1,6 +1,6 @@
 #' @importFrom stats dnbinom qnbinom predict residuals density
 #' @importFrom ggplot2 ggplot geom_histogram stat_function xlab ylab coord_cartesian aes stat
-.plotDmmHistogram <- function(model, quantile=0.95, binwidth=50) {
+.plotDmmHistogram <- function(model, quantile=0.95, binwidth=5) {
   
   # Naive mixture model
   if (all(c("mu1", "mu2", "theta1", "theta2", "pi", "y") %in% names(model))) {
@@ -77,7 +77,7 @@
 #' @importFrom ggplot2 ggtitle
 #' @importFrom gridExtra grid.arrange
 setMethod("plotDmmHistogram", signature=c(model="list"),
-  function (model, quantile=0.95, binwidth=50) {
+  function (model, quantile=0.95, binwidth=5) {
     # Only one model given (for one hashtag)
     if (all(c("mu1", "mu2", "theta1", "theta2", "pi") %in% names(model)) | all(c("fit1", "fit2", "pi") %in% names(model))) {
       return(.plotDmmHistogram(model, quantile=quantile, binwidth=binwidth))

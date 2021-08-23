@@ -78,7 +78,7 @@ simdata <- .dmmSimulateHto(class=class, mu=c(150, 300), theta=c(15, 20),
 dim(simdata$hto)
 table(simdata$groundTruth)
 
-mean(simdata$rna)
+mean(simdata$rna) # muRna
 var(simdata$rna)  # muRna + muRna^2/thetaRna
 
 mean(simdata$hto[1, class[1, ]])  # mu[1]
