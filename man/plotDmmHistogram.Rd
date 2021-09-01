@@ -3,7 +3,7 @@
 \name{plotDmmHistogram}
 \alias{plotDmmHistogram}
 \alias{plotDmmHistogram,list-method}
-\title{Plotting mixture densities together with a histogram}
+\title{Plotting a histogram with mixture densities}
 \usage{
 plotDmmHistogram(model, quantile = 0.95, binwidth = 5)
 }
@@ -17,7 +17,9 @@ right limit of the x axis of the plot.}
 \item{binwidth}{Width of the bins of the histogram.}
 }
 \value{
-An object of class \code{ggplot} is returned.
+An object of class \code{ggplot} is returned. Or, if multiple
+  mixture models are passed to this function, an object of class
+  \code{gtable} is returned.
 }
 \description{
 This methods plots the mixture density and the components' densities
@@ -55,4 +57,7 @@ dmmreg <- demuxmix(simdata$hto, rna=simdata$rna, p.acpt=0.9)
 p <- plotDmmHistogram(dmmreg$model[1])
 \donttest{p + ggplot2::coord_cartesian(xlim=c(25, 100), ylim=c(0, 0.01))}
 
+}
+\seealso{
+\code{\link{demuxmix}}
 }

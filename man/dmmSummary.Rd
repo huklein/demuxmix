@@ -51,3 +51,6 @@ dmmSummary(dmm$results)
 dmmSummary(dmm$results, p.acpt=0.5)
 
 }
+\seealso{
+\code{\link{demuxmix}}
+}

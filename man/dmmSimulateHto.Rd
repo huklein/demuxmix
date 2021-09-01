@@ -89,3 +89,6 @@ var(simdata$hto[1, class[1, ]])   # > mu[1] + mu[1]^2/theta[1]
 cor(simdata$rna[class[1, ]], simdata$hto[1, class[1, ]])
 
 }
+\seealso{
+\code{\link{demuxmix}}
+}
