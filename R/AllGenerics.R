@@ -186,7 +186,8 @@
 #' 
 #' @aliases demuxmix,matrix,missing-method demuxmix,matrix,numeric-method
 #'   demuxmix,Matrix,missing-method demuxmix,Matrix,numeric-method
-#'   
+#'
+#' @importFrom methods setGeneric
 #' @export
 setGeneric("demuxmix",
            function(object, rna, p.acpt=0.9, alpha=0.9, beta=0.9, correctTails=TRUE, tol=10^-5, maxIter=100, k.hto=1.5, k.rna=1.5)
@@ -236,7 +237,8 @@ setGeneric("demuxmix",
 #' dmmOverlap(dmmreg$model[["HTO_1"]])
 #' 
 #' @aliases dmmOverlap,list-method
-#' 
+#'
+#' @importFrom methods setGeneric
 #' @export
 setGeneric("dmmOverlap",
            function(model, tol=0.001)
@@ -296,7 +298,7 @@ setGeneric("dmmOverlap",
 #' set.seed(2642)
 #' class <- rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
 #'                c(rep(FALSE, 200), rep(TRUE, 220)))
-#' simdata <- .dmmSimulateHto(class=class, mu=c(150, 300), theta=c(15, 20),
+#' simdata <- dmmSimulateHto(class=class, mu=c(150, 300), theta=c(15, 20),
 #'                           muAmbient=c(30, 30), thetaAmbient=c(10, 10),
 #'                           muRna=3000, thetaRna=30)
 #' dim(simdata$hto)
@@ -314,6 +316,7 @@ setGeneric("dmmOverlap",
 #' 
 #' @aliases dmmSimulateHto,matrix-method
 #' 
+#' @importFrom methods setGeneric
 #' @export
 setGeneric("dmmSimulateHto",
            function(class, mu=180, theta=15, muAmbient=30, thetaAmbient=10, muRna=3000, thetaRna=30)
@@ -366,6 +369,7 @@ setGeneric("dmmSimulateHto",
 #' 
 #' @aliases dmmSummary,data.frame-method
 #' 
+#' @importFrom methods setGeneric
 #' @export
 setGeneric("dmmSummary",
            function(dmmResults, p.acpt)
@@ -399,7 +403,7 @@ setGeneric("dmmSummary",
 #'   
 #'   Sometimes it is useful to zoom into the plot to obtain a better view
 #'   of the fit. To restrict the plot to a certain range on the x or y axis,
-#'   the method \code{\link[ggplo2]{coord_cartesian}} from the \code{ggplot2}
+#'   the method \code{\link[ggplot2]{coord_cartesian}} from the \code{ggplot2}
 #'   package should be used (see examples).
 #'   
 #' @return An object of class \code{ggplot} is returned. Or, if multiple
@@ -424,6 +428,7 @@ setGeneric("dmmSummary",
 #'
 #' @aliases plotDmmHistogram,list-method
 #' 
+#' @importFrom methods setGeneric
 #' @export
 setGeneric("plotDmmHistogram",
            function(model,  quantile=0.95, binwidth=5)
@@ -469,6 +474,7 @@ setGeneric("plotDmmHistogram",
 #'
 #' @aliases plotDmmScatter,list-method
 #' 
+#' @importFrom methods setGeneric
 #' @export
 setGeneric("plotDmmScatter",
            function(model, log=TRUE, pointsize=1.2)
@@ -520,6 +526,7 @@ setGeneric("plotDmmScatter",
 #'
 #' @aliases plotDmmPosteriorP,list-method
 #' 
+#' @importFrom methods setGeneric
 #' @export
 setGeneric("plotDmmPosteriorP",
            function(model, log=FALSE, bins=50)

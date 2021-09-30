@@ -72,7 +72,7 @@ A vector \eqn{r} of detected RNA features (same length as columns
 set.seed(2642)
 class <- rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
                c(rep(FALSE, 200), rep(TRUE, 220)))
-simdata <- .dmmSimulateHto(class=class, mu=c(150, 300), theta=c(15, 20),
+simdata <- dmmSimulateHto(class=class, mu=c(150, 300), theta=c(15, 20),
                           muAmbient=c(30, 30), thetaAmbient=c(10, 10),
                           muRna=3000, thetaRna=30)
 dim(simdata$hto)

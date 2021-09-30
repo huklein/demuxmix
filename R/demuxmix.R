@@ -280,6 +280,7 @@ dmmClassify <- function(hto, rna, mModel, alpha=0.9, beta=0.9, correctTails=TRUE
 }
 
 
+#' @importFrom methods setMethod
 #' @importClassesFrom Matrix Matrix
 setMethod("demuxmix",
           signature=c(object="Matrix", rna="missing"),
@@ -289,6 +290,7 @@ setMethod("demuxmix",
           signature=c(object="matrix", rna="missing"),
           .demuxmix)
 
+#' @importFrom methods setMethod
 #' @importClassesFrom Matrix Matrix
 setMethod("demuxmix",
           signature=c(object="Matrix", rna="numeric"),

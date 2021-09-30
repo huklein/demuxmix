@@ -40,7 +40,7 @@ A histogram overlaid with the densities from the mixture model
   
   Sometimes it is useful to zoom into the plot to obtain a better view
   of the fit. To restrict the plot to a certain range on the x or y axis,
-  the method \code{\link[ggplo2]{coord_cartesian}} from the \code{ggplot2}
+  the method \code{\link[ggplot2]{coord_cartesian}} from the \code{ggplot2}
   package should be used (see examples).
 }
 \examples{
