@@ -25,27 +25,57 @@ knitr::opts_chunk$set(
 
 The package demuxmix ...
 
+Empty droplet should have been removed. This package is flexible.
 
-# Quick start
 
-```{r setup}
+# Getting cell hashing data
+
+```{r simulate}
 library(demuxmix)
-library(SingleCellExperiment)
-library(DropletUtils)
-library(scuttle)
-library(scRNAseq)
 library(ggplot2)
+library(cowplot)
 
+class <- rbind(
+  c(rep( TRUE, 200), rep(FALSE, 200), rep(FALSE, 200), rep( TRUE, 50)),
+  c(rep(FALSE, 200), rep( TRUE, 200), rep(FALSE, 200), rep( TRUE, 50)),
+  c(rep(FALSE, 200), rep(FALSE, 200), rep( TRUE, 200), rep(FALSE, 50)))
+simdata <- dmmSimulateHto(class)
+hto <- simdata$hto
+rna <- simdata$rna
+
+hto1 <- data.frame(HTO_1=hto[1, ], HTO=colSums(hto), NumGenes=rna)
+pa <- ggplot(hto1, aes(x=HTO_1)) + geom_histogram(bins=30)
+pb <- ggplot(hto1, aes(x=NumGenes, y=HTO)) + geom_point()
+cowplot::plot_grid(pa, pb, labels=c("A", "B"))
+```
+
+
+```{r stoeckius, eval=FALSE}
+library(demuxmix)
+library(ggplot2)
+library(scRNAseq)
+library(DropletUtils)
+library(cowplot)
 
 htoExp <- StoeckiusHashingData(type="mixed")
 eDrops <- emptyDrops(counts(htoExp))
 htoExp <- htoExp[, which(eDrops$FDR <= 0.001)]
 
+rna <- apply(assay(htoExp) > 0, 2, sum)
+hto <- assay(altExp(htoExp))
+dim(hto)
+
+hto1 <- data.frame(HTO_1=hto[1, ], HTO=colSums(hto), NumGenes=rna)
+pa <- ggplot(hto1, aes(x=HTO_1)) + geom_histogram(bins=50) + coord_cartesian(ylim=c(0, 200))
+pb <- ggplot(hto1, aes(x=log(NumGenes), y=HTO)) + geom_point()
+cowplot::plot_grid(pa, pb, labels=c("A", "B"))
 ```
 
-```{r setup2}
+
+
+```{r setup2, eval=FALSE}
 qc <- perCellQCMetrics(htoExp)
-dmm <- demuxmix(assay(altExp(htoExp)), rna=qc$detected)
-dmmSummary(dmm$results)
-plotDmmHistogram(dmm$model[[1]], binwidth = 1) + coord_cartesian(ylim=c(0, 0.02), xlim=c(0, 150))
+# dmm <- demuxmix(assay(altExp(htoExp)), rna=qc$detected)
+# dmmSummary(dmm$results)
+# plotDmmHistogram(dmm$model[[1]], binwidth = 1) + coord_cartesian(ylim=c(0, 0.02), xlim=c(0, 150))
 ```

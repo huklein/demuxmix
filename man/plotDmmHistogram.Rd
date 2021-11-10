@@ -5,16 +5,16 @@
 \alias{plotDmmHistogram,list-method}
 \title{Plotting a histogram with mixture densities}
 \usage{
-plotDmmHistogram(model, quantile = 0.95, binwidth = 5)
+plotDmmHistogram(object, hto, quantile = 0.95, binwidth = 5)
 }
 \arguments{
-\item{model}{A mixture model or a list of mixture models returned by
-\code{\link{demuxmix}}.}
-
 \item{quantile}{Quantile of the mixture distribution which is used as
 right limit of the x axis of the plot.}
 
 \item{binwidth}{Width of the bins of the histogram.}
+
+\item{model}{A mixture model or a list of mixture models returned by
+\code{\link{demuxmix}}.}
 }
 \value{
 An object of class \code{ggplot} is returned. Or, if multiple

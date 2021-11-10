@@ -5,16 +5,16 @@
 \alias{plotDmmScatter,list-method}
 \title{Plotting RNA features versus HTO counts}
 \usage{
-plotDmmScatter(model, log = TRUE, pointsize = 1.2)
+plotDmmScatter(object, hto, log = TRUE, pointsize = 1.2)
 }
 \arguments{
-\item{model}{A regression mixture model or a list of regression mixture
-models returned by \code{\link{demuxmix}}.}
-
 \item{log}{Logical value indicating whether both HTO counts and number
 of RNA features should be log transformed.}
 
 \item{pointsize}{Numeric value specifying the size of the points.}
+
+\item{model}{A regression mixture model or a list of regression mixture
+models returned by \code{\link{demuxmix}}.}
 }
 \value{
 An object of class \code{ggplot} is returned. Or, if multiple

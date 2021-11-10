@@ -5,16 +5,16 @@
 \alias{plotDmmPosteriorP,list-method}
 \title{Plotting a histogram of posterior probabilities}
 \usage{
-plotDmmPosteriorP(model, log = FALSE, bins = 50)
+plotDmmPosteriorP(object, hto, bins = 50)
 }
 \arguments{
+\item{bins}{The number of bins of the histogram.}
+
 \item{model}{A mixture model or a list of mixture models returned
 \code{\link{demuxmix}}.}
 
 \item{log}{Logical value indicating whether a logarithmic scale
 should be used for the frequencies (y axis).}
-
-\item{bins}{The number of bins of the histogram.}
 }
 \value{
 An object of class \code{ggplot} is returned. Or, if multiple

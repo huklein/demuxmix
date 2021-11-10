@@ -5,10 +5,10 @@
 \alias{dmmOverlap,list-method}
 \title{Calculate area intersected by two components of a mixture model}
 \usage{
-dmmOverlap(model, tol = 0.001)
+dmmOverlap(object, hto, tol = 0.001)
 }
 \arguments{
-\item{model}{A mixture model or a list of mixture models as
+\item{object}{A mixture model or a list of mixture models as
 returned by \code{\link{demuxmix}}.}
 
 \item{tol}{The maximum acceptable error when calculating the

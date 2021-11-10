@@ -9,9 +9,10 @@
 \title{Demultiplexing using mixture models}
 \usage{
 demuxmix(
-  object,
+  hto,
   rna,
-  p.acpt = 0.9,
+  p.acpt = 0.9^nrow(hto),
+  model = "auto",
   alpha = 0.9,
   beta = 0.9,
   correctTails = TRUE,
@@ -22,9 +23,6 @@ demuxmix(
 )
 }
 \arguments{
-\item{object}{A matrix of HTO counts where each row corresponds to a hashtag
-and each column to a cell barcode.}
-
 \item{rna}{An optional numeric vector with the number of genes detected in
 the RNA library for each cell. Same length as columns in \code{object}.
 If missing, a naive instead of a regression mixture model is used.}
@@ -67,6 +65,9 @@ hashtag in the dataset. See details.}
 Numbers of detected genes larger than the 0.75 quantile +
 \code{k.rna} * IQR are considered outliers. Either a single value or
 a vector with one entry for each hashtag in the dataset. See details.}
+
+\item{object}{A matrix of HTO counts where each row corresponds to a hashtag
+and each column to a cell barcode.}
 }
 \value{
 \code{demuxmix} returns a list with four elements. The first

@@ -190,9 +190,9 @@
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("demuxmix",
-           function(object, rna, p.acpt=0.9, alpha=0.9, beta=0.9, correctTails=TRUE, tol=10^-5, maxIter=100, k.hto=1.5, k.rna=1.5)
+           function(hto, rna, p.acpt=0.9^nrow(hto), model="auto", alpha=0.9, beta=0.9, correctTails=TRUE, tol=10^-5, maxIter=100, k.hto=1.5, k.rna=1.5)
              standardGeneric("demuxmix"),
-           signature=c("object", "rna"))
+           signature=c("hto", "rna"))
 
 
 
@@ -202,7 +202,7 @@ setGeneric("demuxmix",
 #' components of the given mixture model. The integral should be
 #' close to 0 if the HTO labeling experiment was successful.
 #'
-#' @param model A mixture model or a list of mixture models as
+#' @param object A mixture model or a list of mixture models as
 #'   returned by \code{\link{demuxmix}}.
 #' @param tol The maximum acceptable error when calculating the
 #'   area.
@@ -241,9 +241,9 @@ setGeneric("demuxmix",
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("dmmOverlap",
-           function(model, tol=0.001)
-            standardGeneric("dmmOverlap"),
-           signature="model")
+           function(object, hto, tol=0.001)
+             standardGeneric("dmmOverlap"),
+           signature=c("object", "hto"))
 
 
 
@@ -370,11 +370,12 @@ setGeneric("dmmSimulateHto",
 #' @aliases dmmSummary,data.frame-method
 #' 
 #' @importFrom methods setGeneric
-#' @export
-setGeneric("dmmSummary",
-           function(dmmResults, p.acpt)
-             standardGeneric("dmmSummary"),
-           signature="dmmResults")
+###' @export
+setGeneric("summary")
+# setGeneric("dmmSummary",
+#            function(dmmResults, p.acpt)
+#              standardGeneric("dmmSummary"),
+#            signature="dmmResults")
 
 
 
@@ -431,9 +432,9 @@ setGeneric("dmmSummary",
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("plotDmmHistogram",
-           function(model,  quantile=0.95, binwidth=5)
+           function(object, hto, quantile=0.95, binwidth=5)
              standardGeneric("plotDmmHistogram"),
-           signature="model")
+           signature=c("object", "hto"))
 
 
 
@@ -477,9 +478,9 @@ setGeneric("plotDmmHistogram",
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("plotDmmScatter",
-           function(model, log=TRUE, pointsize=1.2)
+           function(object, hto, log=TRUE, pointsize=1.2)
              standardGeneric("plotDmmScatter"),
-           signature="model")
+           signature=c("object", "hto"))
 
 
 
@@ -529,6 +530,63 @@ setGeneric("plotDmmScatter",
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("plotDmmPosteriorP",
-           function(model, log=FALSE, bins=50)
+           function(object, hto, bins=50)
              standardGeneric("plotDmmPosteriorP"),
+           signature=c("object", "hto"))
+
+#' @export
+setGeneric("p.acpt",
+           function(model)
+             standardGeneric("p.acpt"),
+           signature="model")
+
+#' @export
+setGeneric("p.acpt<-",
+           function(model, value)
+             standardGeneric("p.acpt<-"),
+           signature=c("model", "value"))
+
+#' @export
+setGeneric("dmmClassify",
+           function(model)
+             standardGeneric("dmmClassify"),
+           signature="model")
+
+#' @export
+setGeneric("getPosteriorProbability",
+           function(model)
+             standardGeneric("getPosteriorProbability"),
+           signature="model")
+
+
+
+# Internal methods for NaiveMixModel and RegMixModel
+setGeneric("getHto",
+           function(model, standardize=FALSE)
+             standardGeneric("getHto"),
+           signature="model")
+
+setGeneric("getMu1",
+           function(model, standardize=FALSE)
+             standardGeneric("getMu1"),
+           signature="model")
+
+setGeneric("getMu2",
+           function(model, standardize=FALSE)
+             standardGeneric("getMu2"),
+           signature="model")
+
+setGeneric("getTheta1",
+           function(model)
+             standardGeneric("getTheta1"),
+           signature="model")
+
+setGeneric("getTheta2",
+           function(model)
+             standardGeneric("getTheta2"),
+           signature="model")
+
+setGeneric("getPi",
+           function(model)
+             standardGeneric("getPi"),
            signature="model")
