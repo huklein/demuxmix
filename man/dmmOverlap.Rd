@@ -2,21 +2,24 @@
 % Please edit documentation in R/AllGenerics.R
 \name{dmmOverlap}
 \alias{dmmOverlap}
-\alias{dmmOverlap,list-method}
+\alias{dmmOverlap,Demuxmix,missing-method}
+\alias{dmmOverlap,Demuxmix,ANY-method}
 \title{Calculate area intersected by two components of a mixture model}
 \usage{
 dmmOverlap(object, hto, tol = 0.001)
 }
 \arguments{
-\item{object}{A mixture model or a list of mixture models as
-returned by \code{\link{demuxmix}}.}
+\item{object}{An object of class \code{\link{Demuxmix}}.}
+
+\item{hto}{Optional vector specifying a subset of HTOs in \code{object} which
+should be used by this function.}
 
 \item{tol}{The maximum acceptable error when calculating the
 area.}
 }
 \value{
-A numeric vector with the intersection area for each given
-  mixture model.
+A numeric vector with the intersection area for each HTO in the given
+  \code{object}.
 }
 \description{
 \code{dmmOverlap} integrates over the area intersected by the two
@@ -31,22 +34,24 @@ The area under both the negative and positive component is an
   
   The definition of the area is not obvious for a regression mixture
   model since the distributions' means depend on the covariate, i.e.,
-  the number of detected genes in the RNA library. This method 
-  calculates the weighted mean number of detected genes in the cells
-  for each component, which are then used to calculate the expected
-  number of HTO counts for the negative and positive component.
+  the number of detected genes in the RNA library. If a regression
+  mixture model is given, this method calculates for each of the two
+  components the weighted mean number of detected genes and uses these
+  numbers to calculate the expected number of HTO counts for the negative
+  and positive component respectively.
 }
 \examples{
 set.seed(2642)
 simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
                                       c(rep(FALSE, 200), rep(TRUE, 220))))
 
-dmm <- demuxmix(simdata$hto, p.acpt=0.9)
-dmmOverlap(dmm$model)
+dmm <- demuxmix(simdata$hto, model="naive")
+dmmOverlap(dmm)
 
-dmmreg <- demuxmix(simdata$hto, rna=simdata$rna, p.acpt=0.9)
-dmmOverlap(dmmreg$model)
-dmmOverlap(dmmreg$model[["HTO_1"]])
+dmmreg <- demuxmix(simdata$hto, rna=simdata$rna)
+dmmOverlap(dmmreg)
+dmmOverlap(dmmreg, hto="HTO_1")
+dmmOverlap(dmmreg, hto=2)
 
 }
 \seealso{

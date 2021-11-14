@@ -1,4 +1,4 @@
-#' @importFrom stats dnbinom pnbinom qnbinom predict
+#' @importFrom stats dnbinom pnbinom qnbinom
 .dmmOverlap <- function(model, tol=0.001) {
 
   mu1 <- getMu1(model, standardize=TRUE)
@@ -19,23 +19,15 @@
     
   return(area + tail)
 }
- 
+
+
 #' @importFrom methods setMethod
-setMethod("dmmOverlap", signature=c(object="NaiveMixModel", hto="missing"),
-  function (object, hto, tol=0.001) {
-    return(.dmmOverlap(object, tol=tol))
-  }
-)
-setMethod("dmmOverlap", signature=c(object="RegMixModel", hto="missing"),
-  function (object, hto, tol=0.001) {
-    return(.dmmOverlap(object, tol=tol))
-  }
-)
 setMethod("dmmOverlap", signature=c(object="Demuxmix", hto="missing"),
   function (object, hto, tol=0.001) {
-    return(sapply(object@models, dmmOverlap, tol=tol))
+    return(sapply(object@models, .dmmOverlap, tol=tol))
   }
 )
+
 setMethod("dmmOverlap", signature=c(object="Demuxmix", hto="ANY"),
   function (object, hto, tol=0.001) {
     if (is.numeric(hto) & any(hto > length(object@models))) {
@@ -44,6 +36,6 @@ setMethod("dmmOverlap", signature=c(object="Demuxmix", hto="ANY"),
     if (is.character(hto) & any(!is.element(hto, names(object@models)))) {
       stop("Invalid HTO identifier.")
     }
-    return(sapply(object@models[hto], dmmOverlap, tol=tol))
+    return(sapply(object@models[hto], .dmmOverlap, tol=tol))
   }
 )

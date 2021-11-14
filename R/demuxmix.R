@@ -259,12 +259,12 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
     stop("Parameter model must be either \"auto\", \"naive\", \"reg\" or \"regpos\".")
   }
   if (any(is.element(model, c("auto", "reg", "regpos"))) & missing(rna)) {
-    stop("Parameter rna msut be given if model is \"auto\", \"reg\" or \"regpos\".")
+    stop("Try to set model=\"naive\" to run demumix without RNA data. Parameter \"rna\" must be given if model is \"auto\" (default), \"reg\" or \"regpos\".")
   }
-  if (any(is.element(model, c("auto", "reg", "regpos"))) & ncol(hto) != length(rna)) {
+  if (any(is.element(model, c("auto", "reg", "regpos"))) && ncol(hto) != length(rna)) {
     stop("Length of rna must equal the number of columns in hto.")
   }
-  if (any(is.element(model, c("auto", "reg", "regpos"))) & any(rna < 1)) {
+  if (any(is.element(model, c("auto", "reg", "regpos"))) && any(rna < 1)) {
     stop("Values in rna must be larger or equal to 1.")
   }
   if (length(p.acpt) != 1) {
@@ -336,9 +336,9 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
                          regRnaNegComp=TRUE,
                          tol=tol[i], maxIter=maxIter[i],
                          htoId=rownames(hto)[i])
-      ov.mmNaive <- dmmOverlap(mmNaive)
-      ov.mmRegpos <- dmmOverlap(mmRegpos)
-      ov.mmReg <- dmmOverlap(mmReg)
+      ov.mmNaive <- .dmmOverlap(mmNaive)
+      ov.mmRegpos <- .dmmOverlap(mmRegpos)
+      ov.mmReg <- .dmmOverlap(mmReg)
       
       if (ov.mmNaive <= ov.mmRegpos & ov.mmNaive <= ov.mmReg) {
         bestModel <- "naive"

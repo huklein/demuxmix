@@ -1,63 +1,78 @@
 #' Demultiplexing using mixture models
 #'
 #' This methods uses mixture models as a probabilistic framework to assign
-#' hashtags to cells and to identify multiplets based on counts obtained from
-#' sequencing a hastag oligo (HTO) library. If the numbers of detected genes
-#' from the corresponding RNA library are passed in the second argument,
-#' regression mixture models are used, which usually improves the
+#' cells to hashtags and to identify multiplets based on counts obtained from
+#' a hastag oligo (HTO) library. If the numbers of detected genes
+#' from the corresponding RNA library are passed as second argument,
+#' regression mixture models can be used, which usually improves the
 #' classification accuracy by leveraging the relationship between HTO and RNA
 #' counts.
 #' 
-#' @param object A matrix of HTO counts where each row corresponds to a hashtag
-#'   and each column to a cell barcode.
+#' @param hto A matrix of HTO counts where each row corresponds to a hashtag
+#'   and each column to a cell barcode. The matrix must have unique row names.
 #' @param rna An optional numeric vector with the number of genes detected in
 #'   the RNA library for each cell. Same length as columns in \code{object}.
-#'   If missing, a naive instead of a regression mixture model is used.
+#'   If missing, parameter \code{model} must be set to "naive".
 #' @param p.acpt Acceptance probability that must be reached in order to
 #'   assign a cell to a hashtag. Cells with lower probabilities are classified
 #'   as "uncertain".
-#' @param alpha Threshold for defining the left tail of the mixture
-#'   distribution where cells should not be classified as "positive". Either a
-#'   single value between 0 and 1 or a vector with one entry for each hashtag
-#'   in the dataset. See details.
+#' @param model A character specifying the type of mixture model to be used.
+#'   Either "naive", "regpos", "reg" or "auto". The last three options
+#'   require parameter \code{rna} to be specified. "auto" selects the best
+#'   model based on maximum difference between the two components of the
+#'   mixture models.
+#' @param alpha Threshold defining the left tail of the mixture
+#'   distribution where cells should not be classified as "positive". Threshold
+#'   must be between 0 and 1. See details.
 #' @param beta Threshold for defining the right tail of the mixture
-#'   distribution where cells should not be classified as "negative". Either a
-#'   single value between 0 and 1 or a vector with one entry for each hashtag
-#'   in the dataset. See details.
+#'   distribution where cells should not be classified as "negative". Threshold
+#'   must be between 0 and 1. See details.
 #' @param correctTails If \code{TRUE}, cells meeting the threshold defined by
 #'   \code{alpha} (\code{beta}) are classified as "negative" ("positive") even
 #'   if the mixture model suggests a different classification. See details.
 #' @param tol Convergence criterion for the EM algorithm fitting the mixture
 #'   model(s). The algorithm stops when the relative increase of the log
-#'   likelihood is less than or equal to \code{tol}. Either a single value
-#'   or a vector with one entry for each hashtag in the dataset.
+#'   likelihood is less than or equal to \code{tol}.
 #' @param maxIter Maximum number of iterations for the EM algorithm and
-#'   for the alternating iteration process fitting the nb regression models
-#'   within each EM iteration. Either a single value or a vector with one
-#'   entry for each hashtag in the dataset.
+#'   for the alternating iteration process fitting the NB regression models
+#'   within each EM iteration.
 #' @param k.hto Factor to define outliers in the HTO counts. Among cells
 #'   positive for the hashtag based on initial clustering, HTO counts
 #'   larger than the 0.75 quantile + \code{k.hto} * IQR are considered
-#'   outliers. Either a single value or a vector with one entry for each
-#'   hashtag in the dataset. See details.
+#'   outliers. See details.
 #' @param k.rna Factor to define outliers in the numbers of detected genes.
 #'   Numbers of detected genes larger than the 0.75 quantile +
-#'   \code{k.rna} * IQR are considered outliers. Either a single value or
-#'   a vector with one entry for each hashtag in the dataset. See details.
+#'   \code{k.rna} * IQR are considered outliers. See details.
 #' 
 #' @details The single cell dataset should undergo basic filtering to
 #'   remove low quality or empty droplets before calling this function,
-#'   but the HTO counts should not be transformed or pre-processed otherwise.
-#'   The number of detected genes passed via the optional argument \code{rna}
-#'   is typically defined as the number of genes in the RNA library with at
-#'   least one read.
+#'   but the HTO counts themselves should not be transformed or pre-processed
+#'   otherwise. The number of detected genes passed via the optional argument
+#'   \code{rna} is typically defined as the number of genes in the RNA library
+#'   with at least one read.
 #'   
-#'   The method itself consists of three steps, which can be modified by the
-#'   remaining parameters. The default settings work well for a wide
-#'   range of datasets, and in most cases only the acceptance probability
-#'   \code{p.acpt} might be of interest (step 3). Steps 1 and 2 are
-#'   executed for each hashtag separately using only the hto counts for that
-#'   hashtag, step 3 classifies the cells based on results from all hashtags:
+#'   The method fits a two-component negative binomial mixture model for each
+#'   hashtag. The type of mixture model used can be specified by \code{model}.
+#'   "naive" fits a standard mixture model. "reg" fits a regression mixture
+#'   model using the given number of detected genes (\code{rna}) as covariate
+#'   in the regression model. "regpos" uses a regression model only for the
+#'   positive but not for the negative component. If model is set to "auto",
+#'   all three models are fitted and the model with the largest difference
+#'   between the two components (best separation) is selected. In most HTO
+#'   datasets, regression mixture models perform better.
+#'   
+#'   The \code{demuxmix} method consists of 3 steps, which can be tuned
+#'   by the respective parameters. The default settings work well for a wide
+#'   range of datasets and should only be changed if any issues arise during
+#'   model fitting and quality control. An exception is the acceptance
+#'   probability \code{p.acpt}, which may be set to smaller or larger value
+#'   depending on the desired tradeoff between number of unclassified/discarded
+#'   cells and error rate. Steps 1 and 2 are executed for each hashtag
+#'   separately using only the hto counts for that hashtag; step 3 classifies
+#'   the cells based on the results from all hashtags. Therefore, parameters
+#'   affecting steps 1 and 2 (incl. \code{model}) can be specified for each
+#'   hashtag using a vector with one element per hashtag. Shorter vectors will
+#'   be extended.
 #'   
 #'   \enumerate{
 #'     \item Preprocessing (\code{k.hto}, \code{k.rna}). Cells are clustered
@@ -66,43 +81,44 @@
 #'     larger than \code{k.hto} times the IQR of the hto counts in the positive
 #'     group are marked as outliers. Outliers are still classified but will
 #'     not be used to fit the mixture model for this hashtag in step 2. If
-#'     the parameter \code{rna} is given, all cells (both groups) with number
-#'     of detected genes larger than k.rna times the IQR are marked as
-#'     outliers, too. Outliers with very large read counts are often
-#'     observed in sequencing data and can negatively affect model fitting in
-#'     step 2. If more than 3\% of the cells are marked as outliers, a warning
-#'     message is printed and larger values for \code{k.hto} and \code{k.rna}
+#'     the parameter \code{rna} is given and the \code{model} is "reg" or
+#'     "regpos", all cells (both groups) with number of detected genes larger
+#'     than k.rna times the IQR are marked as outliers, too, since these cells 
+#'     could affect the fitting of the regression model negatively. If more
+#'     than 5\% of the cells are marked as outliers, a warning message is
+#'     printed and larger values for \code{k.hto} and \code{k.rna}
 #'     might be preferable. If the model fit seems to be affected by a few
 #'     large values (very high variance of the positive component), smaller
 #'     values should be chosen.
 #'     
-#'     \item Model fitting (\code{alpha}, \code{beta}, \code{correctTails},
-#'     \code{tol}, \code{maxIter}). An EM algorithm is used to fit a mixture
-#'     model to the cells not marked as outliers in step 1. \code{maxIter}
-#'     defines the maximum number of iterations of the EM algorithm, and,
-#'     if parameter \code{rna} is given, it also defines the maximum number
-#'     of iterations to fit the negative binomial regression models within
-#'     each EM iteration. \code{tol} defines the convergence criterion for
-#'     the EM algorithm. The algorithm stops if \eqn{\DeltaLL/LL \le}
-#'     \code{tol}. After the mixture model is fit, the posterior probability
-#'     that cell X is positive for the hashtag \eqn{P(X = pos)} is
-#'     calculated. Depending on the given data, these probabilities can be
-#'     inaccurate at the far tails of the mixture distribution. Specifically,
-#'     a positive component with large variance can be larger than the
-#'     negative component close to zero, if the negative component is
-#'     narrow and shifted to the right to model ambient hashtags.
-#'     If \code{correctTails} is \code{TRUE}, the following two rules are
-#'     applied to avoid false classifications at the at the far tails. First,
-#'     if a cell X is classified as positive based on the posterior
+#'     \item Model fitting (\code{model}, \code{alpha}, \code{beta},
+#'     \code{correctTails}, \code{tol}, \code{maxIter}). An EM algorithm is
+#'     used to fit a mixture model to the HTO counts which were not marked as
+#'     outliers in step 1. \code{maxIter} defines the maximum number of
+#'     iterations of the EM algorithm, and, if \code{model} is "reg", "regpos"
+#'     or "auto", it also defines the maximum number of iterations to fit the
+#'     negative binomial regression models within each EM iteration. \code{tol}
+#'     defines the convergence criterion for the EM algorithm. The algorithm
+#'     stops if \eqn{\DeltaLL/LL \le} \code{tol}. After the mixture model has
+#'     been fitted, the posterior probability that cell X is positive for
+#'     the hashtag \eqn{P(X = pos)} is calculated. Depending on the given data,
+#'     these probabilities can be inaccurate at the far tails of the mixture
+#'     distribution. Specifically, a positive component with large variance can
+#'     have a larger value close to zero than the negative component, if the
+#'     negative component is narrow and shifted to the right due to ambient
+#'     hashtags. If \code{correctTails} is \code{TRUE}, the following two rules
+#'     are applied to avoid false classifications at the at the far tails.
+#'     First, if a cell X is classified as positive based on the posterior
 #'     probability, but the probability to detected more than the observed
 #'     \eqn{h_x} hashtags in a negative cell is \eqn{P(H \ge h_x | neg)} >
 #'     \code{alpha}, then \eqn{P(X = pos)} is set to 0 (left tail). Second,
 #'     if a cell X is classified as negative, but \eqn{P(H \le h_x | pos)} >
 #'     \code{beta}, \eqn{P(X = pos)} is set to 1 (right tail). For most
-#'     datasets, these rules will not apply and it's recommend not to change
+#'     datasets, these rules will not apply and it's recommended not to change
 #'     these values. If \code{correctTails} is \code{FALSE}, posterior
 #'     probabilities will not be altered, but potential problems at the tails
-#'     will still be logged. See Value.
+#'     will still be logged in the slot \code{tailException} of the returned
+#'     object.
 #'     
 #'     \item Classification (\code{p.acpt}). The posterior probabilities
 #'     obtained from the models fitted to each hashtag separately are 
@@ -110,60 +126,21 @@
 #'     classes are considered: one class for each hashtag (singletons), one
 #'     class for each possible multiplet, and a negative class representing
 #'     droplets negative for all hashtags (i.e. empty droplets or droplets
-#'     containing only parts of cells). Each cell is assigned to the most
-#'     likely class unless the probability is smaller than /code{p.acpt},
-#'     in which case the cell is assigned to the class "uncertain". The
-#'     calculation of the posterior probabilities assumes that
-#'     the HTO counts of the different hashtags are distributed
-#'     independently. This assumption is unlikely for real HTO data
-#'     where underlying factors such as cell size usually cause a positive
-#'     correlation. Consequently, a mild overestimation of multiplets and
-#'     negative droplets can be expected, whereas the estimated error rates for
-#'     singletons, which are selected for downstream analyses, are conservative
-#'     and are likely an upper boundary.
+#'     containing only cell debris). Each cell is assigned to the most
+#'     likely class unless the probability is smaller than \code{p.acpt},
+#'     in which case the cell is assigned to the class "uncertain". Apply the
+#'     method \code{\link{dmmClassify}} to an object returned by \code{demuxmix}
+#'     to obtain the classification results. The acceptance probability
+#'     can be changed after running \code{demuxmix} using
+#'     \code{\link{p.acpt<-}}.
 #'   }
 #'   
-#' @return \code{demuxmix} returns a list with four elements. The first
-#'   element contains the classification results in a \code{data.frame}. The
-#'   other elements are helpful for assessing the model fit, but not intended
-#'   to be directly used in most cases. In detail, the following elements
-#'   are returned:
-#'   
-#'   \describe{
-#'     \item{results}{A \code{data.frame} with four columns and one row
-#'       per cell. The columns "mlClass", "mlClassP", and "mlClassType"
-#'       contain the most likely class, the probability of the most likely
-#'       class, and its type (singleton, multiplet, or negative). The column
-#'       "class" contains the final classification and is either equal to
-#'       "mlClass" or set to "uncertain", if "mlClassP" is smaller than the
-#'       given threshold \code{p.acpt}. Classification results for a different
-#'       threshold \code{p.acpt} can be quickly obtained using "mlClass" and
-#'       "mlClassP" instead of re-running the method.}
-#'   
-#'     \item{htoResults}{A \code{data.frame} with four columns for each
-#'       hashtag in the dataset and one row per cell storing information about
-#'       the separate mixture models for each hashtag. The four columns for
-#'       each hashtag contain the posterior probability that the cell is
-#'       positive for the hashtag, the probability \eqn{P(H \ge h_x | neg)},
-#'       the probability \eqn{P(H \le h_x | pos)}, and a \code{logical}
-#'       value indicating whether one of the two rules indicating potential
-#'       false classification at the tails was met. The logical value is also
-#'       set to \code{TRUE} if \code{correctTails} is \code{FALSE}. See
-#'       Details for more information about the last three columns.}
-#'       
-#'     \item{model}{A \code{list} with one element for each hashtag. Each list
-#'       element stores the fitted mixture model together with the data used
-#'       to fit the model and convergence information. In case of a regression
-#'       mixture model, the list contains objects of class \code{negbin}. The
-#'       list "model" or any of its elements can be passed to one of the
-#'       plotting function, e.g. \code{\link{plotDmmHistogram}}, to assess
-#'       the fit of the model.}
-#'       
-#'     \item{parameters}{A \code{list} storing all parameters passed to 
-#'      \code{demuxmix}.}
-#'  }
+#' @return \code{demuxmix} returns an object of class \code{\link{Demuxmix}}.
+#'   Classification results can be extracted with \code{\link{dmmClassify}}.
+#'   Various plot methods (see below) are available to assess the model fit.
 #'  
-#' @seealso \code{\link{dmmSummary}} to summarize the classification results.
+#' @seealso \code{\link{dmmClassify}} to extract the classification results
+#'   and \code{\link{summary}} to summarize the results.
 #'   \code{\link{plotDmmHistogram}}, \code{\link{plotDmmScatter}},
 #'   \code{\link{plotDmmPosteriorP}}, and \code{\link{dmmOverlap}} to assess
 #'   the model fit.
@@ -173,16 +150,22 @@
 #' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
 #'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
 #' 
-#' dmm <- demuxmix(simdata$hto, p.acpt=0.9)
-#' table(dmm$results$class, simdata$groundTruth)
+#' dmm <- demuxmix(simdata$hto, model="naive")
+#' dmm
+#' table(dmmClassify(dmm)$HTO, simdata$groundTruth)
 #' 
-#' dmmreg <- demuxmix(simdata$hto, rna=simdata$rna, p.acpt=0.9)
-#' table(dmmreg$results$class, simdata$groundTruth)
-#' dmmSummary(dmmreg$results)
-#' dmmOverlap(dmmreg$model)
+#' dmmreg <- demuxmix(simdata$hto, rna=simdata$rna)
+#' dmm
+#' table(dmmClassify(dmmreg)$HTO, simdata$groundTruth)
+#' summary(dmmreg)
+#' 
+#' p.acpt(dmmreg) <- 0.5
+#' summary(dmmreg)
+#' 
+#' dmmOverlap(dmmreg)
 #' \donttest{
-#' plotDmmHistogram(dmmreg$model)
-#' plotDmmScatter(dmmreg$model[[1]])}
+#' plotDmmHistogram(dmmreg)
+#' plotDmmScatter(dmmreg, hto="HTO_1")}
 #' 
 #' @aliases demuxmix,matrix,missing-method demuxmix,matrix,numeric-method
 #'   demuxmix,Matrix,missing-method demuxmix,Matrix,numeric-method
@@ -196,14 +179,67 @@ setGeneric("demuxmix",
 
 
 
+#' Return the classification results from a Demuxmix object
+#' 
+#' This method uses the posterior probabilities from the given demuxmix model
+#' to assign each cell to the most likely class, either a single HTO,
+#' a combination of HTOs (multiplet) or the negative class (not hashtagged
+#' cells, empty droplets, cell debris). If the assignment cannot be made with
+#' certainty above a defined threshold, the cell is labeled as "uncertain".
+#' 
+#' @param object An object of class \code{\link{Demuxmix}}.
+#' 
+#' @details A cell is labeled as "uncertain" if the posterior probability of
+#'   the most likely class is smaller than the threshold \code{p.acpt}, which
+#'   is stored in the given \code{\link{Demuxmix}} object. The acceptance
+#'   probability \code{p.acpt} can be inspected and set to a different value
+#'   by applying the getter/setter method \code{\link{p.acpt}} to the
+#'   \code{\link{Demuxmix}} object before calling this method. The method
+#'   \code{\link{summary}} is useful to investigate the effect of and to
+#'   estimate error rates for different values of \code{p.acpt}.
+#' 
+#' @return A \code{data.frame} with 3 columns and one row for each cell
+#'   in the dataset. The first column gives the class (HTO) the cell has been
+#'   assigned to. The second column contains the posterior probability. And the
+#'   third column specifies the type of the assigned class, i.e., singleton,
+#'   multiplet, negative or uncertain.
+#' 
+#' @seealso \code{\link{demuxmix}}
+#' 
+#' @examples
+#' set.seed(2642)
+#' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+#'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
+#' 
+#' dmm <- demuxmix(simdata$hto, rna=simdata$rna)
+#' head(dmmClassify(dmm))
+#' table(dmmClassify(dmm)$HTO, simdata$groundTruth)
+#' 
+#' p.acpt(dmm) <- 0.5
+#' sum(dmmClassify(dmm)$HTO == "uncertain")
+#' p.acpt(dmm) <- 0.9999
+#' sum(dmmClassify(dmm)$HTO == "uncertain")
+#' 
+#' @aliases dmmClassify,Demuxmix-method
+#' 
+#' @importFrom methods setGeneric
+#' @export
+setGeneric("dmmClassify",
+           function(model)
+             standardGeneric("dmmClassify"),
+           signature="model")
+
+
+
 #' Calculate area intersected by two components of a mixture model
 #' 
 #' \code{dmmOverlap} integrates over the area intersected by the two
 #' components of the given mixture model. The integral should be
 #' close to 0 if the HTO labeling experiment was successful.
 #'
-#' @param object A mixture model or a list of mixture models as
-#'   returned by \code{\link{demuxmix}}.
+#' @param object An object of class \code{\link{Demuxmix}}.
+#' @param hto Optional vector specifying a subset of HTOs in \code{object} which
+#'   should be used by this function.
 #' @param tol The maximum acceptable error when calculating the
 #'   area.
 #'   
@@ -214,13 +250,14 @@ setGeneric("demuxmix",
 #'   
 #'   The definition of the area is not obvious for a regression mixture
 #'   model since the distributions' means depend on the covariate, i.e.,
-#'   the number of detected genes in the RNA library. This method 
-#'   calculates the weighted mean number of detected genes in the cells
-#'   for each component, which are then used to calculate the expected
-#'   number of HTO counts for the negative and positive component.
+#'   the number of detected genes in the RNA library. If a regression
+#'   mixture model is given, this method calculates for each of the two
+#'   components the weighted mean number of detected genes and uses these
+#'   numbers to calculate the expected number of HTO counts for the negative
+#'   and positive component respectively.
 #' 
-#' @return A numeric vector with the intersection area for each given
-#'   mixture model.
+#' @return A numeric vector with the intersection area for each HTO in the given
+#'   \code{object}.
 #' 
 #' @seealso \code{\link{demuxmix}}
 #' 
@@ -229,14 +266,15 @@ setGeneric("demuxmix",
 #' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
 #'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
 #' 
-#' dmm <- demuxmix(simdata$hto, p.acpt=0.9)
-#' dmmOverlap(dmm$model)
+#' dmm <- demuxmix(simdata$hto, model="naive")
+#' dmmOverlap(dmm)
 #' 
-#' dmmreg <- demuxmix(simdata$hto, rna=simdata$rna, p.acpt=0.9)
-#' dmmOverlap(dmmreg$model)
-#' dmmOverlap(dmmreg$model[["HTO_1"]])
+#' dmmreg <- demuxmix(simdata$hto, rna=simdata$rna)
+#' dmmOverlap(dmmreg)
+#' dmmOverlap(dmmreg, hto="HTO_1")
+#' dmmOverlap(dmmreg, hto=2)
 #' 
-#' @aliases dmmOverlap,list-method
+#' @aliases dmmOverlap,Demuxmix,missing-method dmmOverlap,Demuxmix,ANY-method
 #'
 #' @importFrom methods setGeneric
 #' @export
@@ -370,12 +408,9 @@ setGeneric("dmmSimulateHto",
 #' @aliases dmmSummary,data.frame-method
 #' 
 #' @importFrom methods setGeneric
-###' @export
+
+#' @export
 setGeneric("summary")
-# setGeneric("dmmSummary",
-#            function(dmmResults, p.acpt)
-#              standardGeneric("dmmSummary"),
-#            signature="dmmResults")
 
 
 
@@ -546,21 +581,17 @@ setGeneric("p.acpt<-",
              standardGeneric("p.acpt<-"),
            signature=c("model", "value"))
 
-#' @export
-setGeneric("dmmClassify",
-           function(model)
-             standardGeneric("dmmClassify"),
-           signature="model")
 
-#' @export
+
+
+
+# Internal methods for NaiveMixModel and RegMixModel
 setGeneric("getPosteriorProbability",
            function(model)
              standardGeneric("getPosteriorProbability"),
            signature="model")
 
 
-
-# Internal methods for NaiveMixModel and RegMixModel
 setGeneric("getHto",
            function(model, standardize=FALSE)
              standardGeneric("getHto"),

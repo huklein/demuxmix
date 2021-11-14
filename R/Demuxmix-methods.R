@@ -1,3 +1,4 @@
+#' @describeIn Demuxmix-class Displays the object on the command line.
 setMethod("show", signature=c(object="Demuxmix"),
   function(object) {
     numCells <- ncol(object@posteriorProb)
@@ -10,7 +11,7 @@ setMethod("show", signature=c(object="Demuxmix"),
     for (i in 1:length(htos)) {
       type <- class(object@models[[i]])
       if (type == "RegMixModel" && !object@models[[i]]@parameters$regRnaNegComp) {
-          type <- "RegMixModel (not negative comp.)"
+          type <- "RegMixModel (no regression for negative comp.)"
       }
       if (object@models[[i]]@converged) {
         converged <- "converged"
@@ -18,23 +19,48 @@ setMethod("show", signature=c(object="Demuxmix"),
         converged <- "not converged!"
       }
       cat(paste("  ", htos[i], ": ", type, "; ", converged, "\n", sep=""))
+      cat(paste(paste(rep(" ", times=nchar(htos[i])+4), collapse=""),
+                "mu=(", format(getMu1(object@models[[i]], standardize=TRUE), digits=5), ", ",
+                format(getMu2(object@models[[i]], standardize=TRUE), digits=5), ")\n", sep=""))
+      if (type == "RegMixModel") {
+        cat(paste(paste(rep(" ", times=nchar(htos[i])+4), collapse=""),
+                  "RNA coef. negative comp: ",
+                  format(coefficients(summary(object@models[[i]]@fit1))["rna", "Estimate"], digits=4),
+                  ", p=", format(coefficients(summary(object@models[[i]]@fit1))["rna", "Pr(>|z|)"], digits=3), "\n", sep=""))
+        cat(paste(paste(rep(" ", times=nchar(htos[i])+4), collapse=""),
+                  "          positive comp: ",
+                  format(coefficients(summary(object@models[[i]]@fit2))["rna", "Estimate"], digits=4),
+                  ", p=", format(coefficients(summary(object@models[[i]]@fit2))["rna", "Pr(>|z|)"], digits=3), "\n", sep=""))
+      }
+      if (type == "RegMixModel (no regression for negative comp.)") {
+        cat(paste(paste(rep(" ", times=nchar(htos[i])+4), collapse=""),
+                  "RNA coef. positive comp: ",
+                  format(coefficients(summary(object@models[[i]]@fit2))["rna", "Estimate"], digits=4),
+                  ", p=", format(coefficients(summary(object@models[[i]]@fit2))["rna", "Pr(>|z|)"], digits=3), "\n", sep=""))
+      }
+      
     }
   }
 )
 
 
-setMethod("getPosteriorProbability", signature=c(model="Demuxmix"),
-  function(model) {
-    return(model@posteriorProb)
-  }
-)
 
+# setMethod("getPosteriorProbability", signature=c(model="Demuxmix"),
+#   function(model) {
+#     return(model@posteriorProb)
+#   }
+# )
+
+
+#' @describeIn Demuxmix-class Returns the acceptance probability \code{p.acpt}.
 setMethod("p.acpt", signature=c(model="Demuxmix"),
   function(model) {
     return(model@parameters$p.acpt)
   }
 )
 
+
+#' @describeIn Demuxmix-class Sets a new acceptance probability \code{p.acpt}.
 setMethod("p.acpt<-", signature=c(model="Demuxmix", value="numeric"),
   function(model, value) {
     if (length(value) > 1) {
@@ -49,25 +75,10 @@ setMethod("p.acpt<-", signature=c(model="Demuxmix", value="numeric"),
   }
 )
 
-setMethod("dmmClassify", signature=c(model="Demuxmix"),
-  function(model) {
-    p <- p.acpt(model)
-    posteriorProb <- getPosteriorProbability(model)
-    posHashtags <- posteriorProb >= 0.5
-    posteriorProb[!posHashtags] <- 1 - posteriorProb[!posHashtags]
-    hto <- apply(posHashtags, 2, function(h) {return(paste(rownames(posHashtags)[h], collapse=","))})
-    hto[hto == ""] <- "negative"
-    prob <- apply(posteriorProb, 2, prod)
-    type <- c("negative", "singleton", "multiplet")[pmin(apply(posHashtags, 2, sum), 2) + 1]
-    hto[prob < p] <- "uncertain"
-    return(data.frame(HTO=hto, Prob=prob, Type=type))
-  }
-)
-
 
 # setGeneric("summary") has been set in AllGenerics
 summary.Demuxmix <- function(object, ...) {
-  dmmResults <- dmmClassification(object)
+  dmmResults <- dmmClassify(object)
   
   # Label all multiplets as "multiplet"
   dmmResults$HTO[dmmResults$Type == "multiplet" & dmmResults$HTO != "uncertain"] <- "multiplet"
@@ -103,4 +114,6 @@ summary.Demuxmix <- function(object, ...) {
   return(classSummary)
 }
 
+#' @describeIn Demuxmix-class Summarizes the classification results and
+#'   estimates error rates.
 setMethod("summary", signature=c(object="Demuxmix"), summary.Demuxmix)
