@@ -336,17 +336,25 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
                          regRnaNegComp=TRUE,
                          tol=tol[i], maxIter=maxIter[i],
                          htoId=rownames(hto)[i])
+      # assess models based on overlap of components
       ov.mmNaive <- .dmmOverlap(mmNaive)
       ov.mmRegpos <- .dmmOverlap(mmRegpos)
       ov.mmReg <- .dmmOverlap(mmReg)
+      # assess models based on posterior probabilities
+      indN <- !prepDataR$outlier[!prepDataN$outlier]
+      indR <- !prepDataN$outlier[!prepDataR$outlier]
+      stopifnot(sum(indN) == sum(indR)) # cells used by both models
+      ppe.mmNaive <- sum(apply(getPosteriorProbability(mmNaive)[indN, ], 1, min))
+      ppe.mmRegpos <- sum(apply(getPosteriorProbability(mmRegpos)[indR, ], 1, min))
+      ppe.mmReg <- sum(apply(getPosteriorProbability(mmReg)[indR, ], 1, min))
       
-      if (ov.mmNaive <= ov.mmRegpos & ov.mmNaive <= ov.mmReg) {
+      if (ppe.mmNaive <= ppe.mmRegpos & ppe.mmNaive <= ppe.mmReg) {
         bestModel <- "naive"
         mixModels[[i]] <- mmNaive
         outliers[i, ] <- prepDataN$outlier
         clusterInit[i, ] <- prepDataN$cluster
         res <- dmmApplyModel(mmNaive, hto=hto[i, ], alpha=alpha[i], beta=beta[i], correctTails=correctTails[i])
-      } else if (ov.mmRegpos <= ov.mmReg) {
+      } else if (ppe.mmRegpos <= ppe.mmReg) {
         bestModel <- "regpos"
         mixModels[[i]] <- mmRegpos
         outliers[i, ] <- prepDataR$outlier
@@ -360,7 +368,10 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
         res <- dmmApplyModel(mmReg, hto=hto[i, ], rna=rna, alpha=alpha[i], beta=beta[i], correctTails=correctTails[i])
       }
       modelSelection <- rbind(modelSelection,
-                              data.frame(hto=rownames(hto)[i], ov.naive=ov.mmNaive, ov.regpos=ov.mmRegpos, ov.reg=ov.mmReg, best=bestModel))
+                              data.frame(hto=rownames(hto)[i],
+                                         ov.naive=ov.mmNaive, ov.regpos=ov.mmRegpos, ov.reg=ov.mmReg,
+                                         ppe.naive=ppe.mmNaive, ppe.regpos=ppe.mmRegpos, ppe.reg=ppe.mmReg,
+                                         best=bestModel))
     
     } else {
       stop("Unknown model specified.") # Should never happen.
