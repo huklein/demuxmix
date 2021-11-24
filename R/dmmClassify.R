@@ -1,6 +1,6 @@
-.dmmClassify <- function(model) {
-  p <- p.acpt(model)
-  posteriorProb <- model@posteriorProb
+.dmmClassify <- function(object) {
+  p <- p.acpt(object)
+  posteriorProb <- object@posteriorProb
   posHashtags <- posteriorProb >= 0.5
   posteriorProb[!posHashtags] <- 1 - posteriorProb[!posHashtags]
   hto <- apply(posHashtags, 2, function(h) {return(paste(rownames(posHashtags)[h], collapse=","))})
@@ -14,4 +14,4 @@
 
 
 #' @importFrom methods setMethod
-setMethod("dmmClassify", signature=c(model="Demuxmix"), .dmmClassify)
+setMethod("dmmClassify", signature=c(object="Demuxmix"), .dmmClassify)

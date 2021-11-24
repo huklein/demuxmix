@@ -53,16 +53,16 @@ setMethod("show", signature=c(object="Demuxmix"),
 
 
 #' @describeIn Demuxmix-class Returns the acceptance probability \code{p.acpt}.
-setMethod("p.acpt", signature=c(model="Demuxmix"),
-  function(model) {
-    return(model@parameters$p.acpt)
+setMethod("p.acpt", signature=c(object="Demuxmix"),
+  function(object) {
+    return(object@parameters$p.acpt)
   }
 )
 
 
 #' @describeIn Demuxmix-class Sets a new acceptance probability \code{p.acpt}.
-setMethod("p.acpt<-", signature=c(model="Demuxmix", value="numeric"),
-  function(model, value) {
+setMethod("p.acpt<-", signature=c(object="Demuxmix", value="numeric"),
+  function(object, value) {
     if (length(value) > 1) {
       value <- value[1]
       warning("Only first element will be used.")
@@ -70,13 +70,14 @@ setMethod("p.acpt<-", signature=c(model="Demuxmix", value="numeric"),
     if (value < 0 | value > 1) {
       stop("New acceptance probability (p.acpt) must be in [0, 1].")
     }
-    model@parameters$p.acpt <- value
-    return(model)
+    object@parameters$p.acpt <- value
+    return(object)
   }
 )
 
 
-# setGeneric("summary") has been set in AllGenerics
+# summary is an S3 method, an S4 generic has been set in AllGenerics.R. We set
+# an S3 and S4 method here.
 summary.Demuxmix <- function(object, ...) {
   dmmResults <- dmmClassify(object)
   

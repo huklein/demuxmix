@@ -3,9 +3,9 @@
 \name{dmmClassify}
 \alias{dmmClassify}
 \alias{dmmClassify,Demuxmix-method}
-\title{Return the classification results from a Demuxmix object}
+\title{Return classification results from a Demuxmix object}
 \usage{
-dmmClassify(model)
+dmmClassify(object)
 }
 \arguments{
 \item{object}{An object of class \code{\link{Demuxmix}}.}

@@ -15,19 +15,9 @@
 
 #' @importFrom ggplot2 ggtitle
 #' @importFrom gridExtra grid.arrange
-setMethod("plotDmmPosteriorP", signature=c(object="NaiveMixModel", hto="missing"),
-  function (object, hto, bins=50) {
-    return(.plotDmmPosteriorP(model=object, bins=bins))
-  }
-)
-setMethod("plotDmmPosteriorP", signature=c(object="RegMixModel", hto="missing"),
-  function (object, hto, bins=50) {
-    return(.plotDmmPosteriorP(model=object, bins=bins))
-  }
-)
 setMethod("plotDmmPosteriorP", signature=c(object="Demuxmix", hto="missing"),
   function (object, hto, bins=50) {
-    plots <- lapply(object@models, plotDmmPosteriorP, bins=bins)
+    plots <- lapply(object@models, .plotDmmPosteriorP, bins=bins)
     if (length(plots) == 1) {
       return(plots[[1]])
     } else {
@@ -35,6 +25,7 @@ setMethod("plotDmmPosteriorP", signature=c(object="Demuxmix", hto="missing"),
     }
   }
 )
+
 setMethod("plotDmmPosteriorP", signature=c(object="Demuxmix", hto="ANY"),
   function (object, hto, bins=50) {
     if (is.numeric(hto) & any(hto > length(object@models))) {
@@ -43,7 +34,7 @@ setMethod("plotDmmPosteriorP", signature=c(object="Demuxmix", hto="ANY"),
     if (is.character(hto) & any(!is.element(hto, names(object@models)))) {
       stop("Invalid HTO identifier.")
     }
-    plots <- lapply(object@models[hto], plotDmmPosteriorP, bins=bins)
+    plots <- lapply(object@models[hto], .plotDmmPosteriorP, bins=bins)
     if (length(plots) == 1) {
       return(plots[[1]])
     } else {

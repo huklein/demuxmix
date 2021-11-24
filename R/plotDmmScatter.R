@@ -29,19 +29,16 @@
 
 #' @importFrom ggplot2 ggtitle
 #' @importFrom gridExtra grid.arrange
-setMethod("plotDmmScatter", signature=c(object="NaiveMixModel", hto="missing"),
-  function (object, hto, log=TRUE, pointsize=1.2) {
-    return(.plotDmmScatter(model=object, log=log, pointsize=pointsize))
-  }
-)
-setMethod("plotDmmScatter", signature=c(object="RegMixModel", hto="missing"),
-  function (object, hto, log=TRUE, pointsize=1.2) {
-    return(.plotDmmScatter(model=object, log=log, pointsize=pointsize))
-  }
-)
 setMethod("plotDmmScatter", signature=c(object="Demuxmix", hto="missing"),
   function (object, hto, log=TRUE, pointsize=1.2) {
-    plots <- lapply(object@models, plotDmmScatter, log=log, pointsize=pointsize)
+    ind <- sapply(object@models, isa, "RegMixModel")
+    if (sum(ind) == 0) {
+      stop("The given object does not contain regression mixture models.")
+    } else if (any(!ind)) {
+      warning(paste("Plots are only generated for regression mixture models (",
+              paste(names(ind)[ind], collapse=", "), ").", sep=""))
+    }
+    plots <- lapply(object@models[ind], .plotDmmScatter, log=log, pointsize=pointsize)
     if (length(plots) == 1) {
       return(plots[[1]])
     } else {
@@ -49,6 +46,7 @@ setMethod("plotDmmScatter", signature=c(object="Demuxmix", hto="missing"),
     }
   }
 )
+
 setMethod("plotDmmScatter", signature=c(object="Demuxmix", hto="ANY"),
   function (object, hto, log=TRUE, pointsize=1.2) {
     if (is.numeric(hto) & any(hto > length(object@models))) {
@@ -57,7 +55,15 @@ setMethod("plotDmmScatter", signature=c(object="Demuxmix", hto="ANY"),
     if (is.character(hto) & any(!is.element(hto, names(object@models)))) {
       stop("Invalid HTO identifier.")
     }
-    plots <- lapply(object@models[hto], plotDmmScatter, log=log, pointsize=pointsize)
+    models <- object@models[hto]
+    ind <- sapply(models, isa, "RegMixModel")
+    if (sum(ind) == 0) {
+      stop("The specified models are not regression mixture models.")
+    } else if (any(!ind)) {
+      warning(paste("Plots are only generated for regression mixture models (",
+                    paste(names(ind)[ind], collapse=", "), ").", sep=""))
+    }
+    plots <- lapply(models[ind], .plotDmmScatter, log=log, pointsize=pointsize)
     if (length(plots) == 1) {
       return(plots[[1]])
     } else {

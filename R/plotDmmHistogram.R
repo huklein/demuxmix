@@ -1,6 +1,6 @@
-#' @importFrom stats dnbinom qnbinom predict residuals density
+#' @importFrom stats dnbinom qnbinom density
 #' @importFrom ggplot2 ggplot geom_histogram stat_function xlab ylab coord_cartesian aes stat
-.plotDmmPlotHistogram <- function(model, quantile=0.95, binwidth=5) {
+.plotDmmHistogram <- function(model, quantile=0.95, binwidth=5) {
   
   hto <- getHto(model, standardize=TRUE)
   mu1 <- getMu1(model, standardize=TRUE)
@@ -41,21 +41,10 @@
 }
 
 
-#' @importFrom ggplot2 ggtitle
 #' @importFrom gridExtra grid.arrange
-setMethod("plotDmmHistogram", signature=c(object="NaiveMixModel", hto="missing"),
-  function(object, hto, quantile=0.95, binwidth=5) {
-    return(.plotDmmPlotHistogram(object, quantile=quantile, binwidth=binwidth))
-  }
-)
-setMethod("plotDmmHistogram", signature=c(object="RegMixModel", hto="missing"),
-  function(object, hto, quantile=0.95, binwidth=5) {
-    return(.plotDmmPlotHistogram(object, quantile=quantile, binwidth=binwidth))
-  }
-)
 setMethod("plotDmmHistogram", signature=c(object="Demuxmix", hto="missing"),
   function (object, hto, quantile=0.95, binwidth=5) {
-    plots <- lapply(object@models, plotDmmHistogram, quantile=quantile, binwidth=binwidth)
+    plots <- lapply(object@models, .plotDmmHistogram, quantile=quantile, binwidth=binwidth)
     if (length(plots) == 1) {
       return(plots[[1]])
     } else {
@@ -63,6 +52,7 @@ setMethod("plotDmmHistogram", signature=c(object="Demuxmix", hto="missing"),
     }
   }
 )
+
 setMethod("plotDmmHistogram", signature=c(object="Demuxmix", hto="ANY"),
   function (object, hto, quantile=0.95, binwidth=5) {
     if (is.numeric(hto) & any(hto > length(object@models))) {
@@ -71,7 +61,7 @@ setMethod("plotDmmHistogram", signature=c(object="Demuxmix", hto="ANY"),
     if (is.character(hto) & any(!is.element(hto, names(object@models)))) {
       stop("Invalid HTO identifier.")
     }
-    plots <- lapply(object@models[hto], plotDmmHistogram, quantile=quantile, binwidth=binwidth)
+    plots <- lapply(object@models[hto], .plotDmmHistogram, quantile=quantile, binwidth=binwidth)
     if (length(plots) == 1) {
       return(plots[[1]])
     } else {

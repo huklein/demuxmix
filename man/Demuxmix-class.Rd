@@ -14,11 +14,20 @@
 \usage{
 \S4method{show}{Demuxmix}(object)
 
-\S4method{p.acpt}{Demuxmix}(model)
+\S4method{p.acpt}{Demuxmix}(object)
 
-\S4method{p.acpt}{Demuxmix,numeric}(model) <- value
+\S4method{p.acpt}{Demuxmix,numeric}(object) <- value
 
 \S4method{summary}{Demuxmix}(object, ...)
+}
+\arguments{
+\item{object}{An \code{Demuxmix} object.}
+
+\item{value}{Value between 0 and 1 specifying the acceptance probability,
+i.e., the minimum posterior probability required to assign a cell to
+an HTO.}
+
+\item{...}{Additional arguments forwarded to summary (ignored).}
 }
 \description{
 An object of this class is returned by \code{\link{demuxmix}} and

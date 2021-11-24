@@ -9,6 +9,12 @@
 #' the models stored in the \code{Demuxmix} object. Please see the package's
 #' vignette for how to work with an object of this class.
 #' 
+#' @param object An \code{Demuxmix} object.
+#' @param value Value between 0 and 1 specifying the acceptance probability,
+#'   i.e., the minimum posterior probability required to assign a cell to
+#'   an HTO.
+#' @param ... Additional arguments forwarded to summary (ignored).
+#' 
 #' @slot models A list of mixture models. One model per hashtag.
 #' @slot outliers A logical matrix of size HTO x cells identifying outlier 
 #'   values excluded from model fitting.
