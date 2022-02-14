@@ -1,5 +1,5 @@
 ---
-title: "Demultiplexing cells with demuxmix"
+title: "Demultiplexing scRNA-seq data with demuxmix"
 author:
 - name: Hans-Ulrich Klein
   affiliation: Columbia University Irving Medical Center, New York, NY
@@ -23,18 +23,89 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-The package demuxmix ...
-
-Empty droplet should have been removed. This package is flexible.
+[to do]
 
 
-# Getting cell hashing data
+# Quick start
 
-```{r simulate}
+A matrix of raw HTO counts (HTO x cells) and a vector with the number of
+detected genes per cell are needed to run *demuxmix* with default settings.
+Empty droplets should be removed before running *demuxmix* and usually any gene
+with at least one read in a cell is considered as detected in that cell.
+Here, we quickly simulate a small example dataset.
+```{r quickstart.simulate}
+library(demuxmix)
+set.seed(2642)
+class <- rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+               c(rep(FALSE, 200), rep(TRUE, 220)))
+simdata <- dmmSimulateHto(class=class, mu=c(150, 300), theta=c(15, 20),
+                          muAmbient=c(30, 30), thetaAmbient=c(10, 10),
+                          muRna=3000, thetaRna=30)
+hto <- simdata$hto
+dim(hto)
+rna <- simdata$rna
+length(rna) == ncol(hto)
+```
+
+The dataset consists of two different HTOs which were simulated to tag 200
+cells each. The dataset also contains additional 20 doublets tagged by both
+HTOs. Next, we run *demuxmix* to assign hashtags to cells.
+```{r quickstart.demuxmix}
+dmm <- demuxmix(hto=hto, rna=rna)
+summary(dmm)
+classes <- dmmClassify(dmm)
+table(classes$HTO)
+```
+The object *dmm* contains the mixture models used to classify the cells. The
+data frame returned  by *summary* shows that 199 cells were assigned to *HTO_1*
+and 198 to *HTO_1* respectively. Since these results meet our expectations and
+the estimated error rates are very low, we ran *dmmClassify* to obtain the
+classifications for each cell in form of a data frame with one row per cell.
+The first column *HTO* of this data frame contains the classification results
+which are usually used to extract the 199 + 198 singletons for downstream
+analysis.
+
+As additional quick quality control, a histogram of the HTO values overlayed
+with the components from the mixture model can be plotted. The following
+command plots a panel with one histogram per HTO in the dataset.
+```{r quickstart.histogram}
+plotDmmHistogram(dmm)
+```
+In this example, the mixture models for both HTOs fit well. *HTO_2* shows an
+even better separation of positive (tagged) and negative (non-tagged) cells. A
+large overlap of the blue and red component would be concerning.
+
+
+# Demultiplexing cells with demuxmix
+
+## Example datasets
+
+Two example datasets are introduced in this vignette to illustrate a typical
+*demuxmix* workflow. The first dataset is a small simulated dataset that was
+used to generate the plots when building this vignette. The alternative second
+dataset is a real dataset and can be downloaded from *ExperimentHub* via the
+*scRNAseq* package. Both datasets can be used to go through this vignette by
+running either the first (simulated data) or the second code block (real data)
+below. Since the real dataset is much larger, some commands may take up to one
+minute to complete, which is the reason why the simulated data was used to
+build this vignette.
+
+
+### Simulated data
+
+Simulated HTO count data are generated for 650 cells by the method
+*dmmSimulateHto*. The logical matrix *class* defines for each cell (column) and
+hashtag (row) whether the cell is positive (tagged) or negative for that
+hashtag. Thus, the 3 x 650 matrix *class* describes a dataset with 3 hashtags
+and 650 cells of which 50 cells are doublets (*HTO_1* and *HTO_2*). The
+remaining 600 cells consist of 200 singletons from each of the three hashtags. 
+
+```{r simulate, fig.height=4}
 library(demuxmix)
 library(ggplot2)
 library(cowplot)
 
+set.seed(563425)
 class <- rbind(
   c(rep( TRUE, 200), rep(FALSE, 200), rep(FALSE, 200), rep( TRUE, 50)),
   c(rep(FALSE, 200), rep( TRUE, 200), rep(FALSE, 200), rep( TRUE, 50)),
@@ -46,16 +117,34 @@ rna <- simdata$rna
 hto1 <- data.frame(HTO_1=hto[1, ], HTO=colSums(hto), NumGenes=rna)
 pa <- ggplot(hto1, aes(x=HTO_1)) + geom_histogram(bins=30)
 pb <- ggplot(hto1, aes(x=NumGenes, y=HTO)) + geom_point()
-cowplot::plot_grid(pa, pb, labels=c("A", "B"))
+plot_grid(pa, pb, labels=c("A", "B"))
 ```
+*dmmSimulateHto* returns a matrix with the simulated HTO counts as well as a
+vector with a simulated number of detected genes for each cell. As depicted in
+the histogram for the first hashtag, the separation is fairly good but not
+perfect. The scatterplot in panel B shows that the method simulates a positive
+association between the number of detected genes and the number of HTO counts
+per cell, which is often observed in real data.
 
+
+### Cell hashing data from Stoeckius et al.
+
+The dataset from Stoeckius et al. consists of cells from 4 different cell
+lines. Three samples were taken from each cell line and tagged with a different
+HTO resulting in a total of 12 different HTOs. The downloaded dataset still
+contains many potentially empty droplet, which are removed using *emptyDrops*.
+Subsequently, the numbers of detected genes are calculated and the HTO matrix
+is extracted from the SingleCellExperiment object. More information about
+the preprocessing and data structures for single cell data in R/Biocnductor
+can be found in this excellent
+[online book](http://bioconductor.org/books/release/OSCA/index.html).
 
 ```{r stoeckius, eval=FALSE}
 library(demuxmix)
 library(ggplot2)
+library(cowplot)
 library(scRNAseq)
 library(DropletUtils)
-library(cowplot)
 
 htoExp <- StoeckiusHashingData(type="mixed")
 eDrops <- emptyDrops(counts(htoExp))
@@ -65,17 +154,150 @@ rna <- apply(assay(htoExp) > 0, 2, sum)
 hto <- assay(altExp(htoExp))
 dim(hto)
 
-hto1 <- data.frame(HTO_1=hto[1, ], HTO=colSums(hto), NumGenes=rna)
-pa <- ggplot(hto1, aes(x=HTO_1)) + geom_histogram(bins=50) + coord_cartesian(ylim=c(0, 200))
-pb <- ggplot(hto1, aes(x=log(NumGenes), y=HTO)) + geom_point()
-cowplot::plot_grid(pa, pb, labels=c("A", "B"))
+hto1 <- data.frame(HEK_A=hto["HEK_A", ], KG1_C=hto["KG1_C", ],
+                   HTO=colSums(hto), NumGenes=rna)
+pa <- ggplot(hto1, aes(x=HEK_A)) + geom_histogram(binwidth=10) +
+  coord_cartesian(ylim=c(0, 500))
+pb <- ggplot(hto1, aes(x=KG1_C)) + geom_histogram(binwidth=10) +
+  coord_cartesian(xlim=c(0, 1000), ylim=c(0, 500))
+pc <- ggplot(hto1, aes(x=NumGenes, y=HTO)) + geom_point(size=0.1) +
+  coord_cartesian(ylim=c(0, 750))
+plot_grid(pa, pb, pc, labels=c("A", "B", "C"))
 ```
 
+The plots generated by the code above reveal that the quality of the different
+HTOs vary in the data from Stoeckius et al. Most HTOs like *HEK_A* show a
+bimodal distribution, but others like *HG1_C* demonstrate a large
+overlap of the distributions from the tagged and non-tagged cells.
+As with the simulated data, there is a positive association between HTO counts
+and detected number of genes. The association appears to be noisier, however.
+The reason therefore is that different cell lines with very different RNA
+profiles and different total amount of RNA were pooled. Such a heterogenous
+pool of cells with very different RNA profiles is uncommon and makes it more
+difficult to utilize the relation between RNA and HTO counts to improve
+demultiplexing. In fact, *demuxmix* does not use the RNA library for most
+HTOs in this dataset, if default settings are used.
 
 
-```{r setup2, eval=FALSE}
-qc <- perCellQCMetrics(htoExp)
-# dmm <- demuxmix(assay(altExp(htoExp)), rna=qc$detected)
-# dmmSummary(dmm$results)
-# plotDmmHistogram(dmm$model[[1]], binwidth = 1) + coord_cartesian(ylim=c(0, 0.02), xlim=c(0, 150))
+## Running demuxmix
+
+*demuxmix* takes a matrix of HTO counts and a vector with the numbers of
+detected genes per cell as input and returns an object of class *Demuxmix*
+containing a mixture model for each HTO. Several additional parameters can be
+passed to *demuxmix*, but all these parameters have default values which work
+for most datasets. With the default settings, *demuxmix* selects either naive
+mixture models or regression mixture models for each HTO depending on which
+model provides the best separation between tagged and non-tagged cells.
+
+```{r demuxmix}
+dmm <- demuxmix(hto, rna=rna)
+dmm
+
+classLabels <- dmmClassify(dmm)
+head(classLabels)
+
+summary(dmm)
+
+# Compare demultiplexing results to ground truth from simulation
+table(classLabels$HTO, simdata$groundTruth)
+```
+For the simulated data, the object *dmm* contains three regression mixture
+models. We then apply *dmmClassify* to obtain a data frame with one row for
+each cell. The first column contains the classification result. The second
+column contains the posterior probability that the assigned hashtag is correct.
+The last column contains the type of the assignment, which is either
+"singleton", "multiplet", "negative" (not tagged by any HTO), or "uncertain"
+(posterior probability too small to classify the cell with confidence). Only
+cells of type singleton should be kept in the dataset. Multiplets of two or
+more cells from the same sample cannot be detected at the demultiplexing step.
+
+The comparison with the true cell labels from the simulation shows that most
+cells were classified correctly.
+
+
+
+```{r demuxmixNaive}
+dmmNaive <- demuxmix(hto, model="naive")
+dmmNaive
+
+classLabelsNaive <- dmmClassify(dmmNaive)
+table(classLabelsNaive$HTO, classLabels$HTO)
+
+table(simdata$groundTruth, classLabelsNaive$HTO)
+summary(dmmNaive)
+```
+The parameter *model* can be used to select a specific mixture model. The naive
+mixture model selected in code above does not use any information from the RNA
+data. The performance is slightly worse with the simulated data, however.
+
+```{r reclassify}
+p.acpt(dmm)
+p.acpt(dmm) <- 0.95
+summary(dmm)
+
+p.acpt(dmm) <- 0
+summary(dmm)
+table(dmmClassify(dmm)$HTO)
+```
+
+Another useful parameter is the acceptance probability *p.acpt*, which can be
+passed to the *demuxmix* method to overwrite the default value, or
+directly set on the object *dmm* as shown in the code block above. The parameter
+is used at the classification step and specifies the minimum posterior
+probability required to classify a cell. If the posterior probability of the
+most likely class is smaller than *p.acpt*, the cell is classified as
+"uncertain". Setting *p.acpt* to 0 forces the classification of all cells. For
+HTO datasets of moderate quality, the default value can be lowered to preserve
+more cells in the dataset. *summary* gives an approximation of the FDR
+depending on the current setting of *p.acpt*.
+
+
+## Quality control
+
+The *demuxmix* package implements methods for assessing data quality and
+model fit. All plotting methods plot a panel with one graph for each HTO in the
+dataset as default. Specific HTOs can be selected via the parameter *hto*. The
+most informative plot is probably the histogram of the HTO data overlaid
+with the mixture density:
+```{r qualityHistogram, fig.height=8}
+plotDmmHistogram(dmm)
+dmmOverlap(dmm)
+```
+In our example dataset, all three HTOs show a good separation between non-tagged
+cells (blue component) and tagged cells (red component) and the three mixture
+models demonstrate a good fit to the data. For HTO datasets with a large
+sequencing depth, the x axis can range from 0 up to many thousand reads
+such that the red component appears as a flat line along the x axis. In that
+case, the method *ggplot2* *coord_cartesian* can be used to zoom into the
+area of the plot where the two components intersect (see examples in the help
+page of *plotDmmHistogram*).
+
+A distinct quality measure related to the histogram is the area intersected by
+the two components of the mixture model, which is be calculated by *dmmOverlap*.
+Good HTO experiments usually results in values less than 0.03.
+
+Another useful quality plot is a histogram of the posterior probability that a
+cell is positive for the respective hashtag:
+```{r qualityPosteriorP, fig.height=8}
+plotDmmPosteriorP(dmm)
+```
+As in the histogram of the example dataset, most posterior probablities should
+be either close to 0 (hashtag absent) for close to 1 (hashtag present) with
+only very few probabilities in between (uncertain).
+
+If regression mixture models were used, the relation between the number of
+detected genes and the HTO reads can be plotted:
+```{r qualityScatterplot, fig.height=8}
+plotDmmScatter(dmm)
+```
+The color of the dots indicates the posterior probability of the cell being
+tagged by the HTO. A cell with many detected genes is required to have more
+HTO reads in order to be classified as positive. If classic mixture models were
+used, the seperation between blue (negative) and red (positive) cells would be
+a vertical line.
+
+
+## Session Info
+```{r sessionInfo}
+sessionInfo()
 ```
