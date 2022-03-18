@@ -29,9 +29,10 @@
 
 #' @importFrom ggplot2 ggtitle
 #' @importFrom gridExtra grid.arrange
+#' @importFrom methods is
 setMethod("plotDmmScatter", signature=c(object="Demuxmix", hto="missing"),
   function (object, hto, log=TRUE, pointsize=1.2) {
-    ind <- sapply(object@models, isa, "RegMixModel")
+    ind <- sapply(object@models, is, "RegMixModel")
     if (sum(ind) == 0) {
       stop("The given object does not contain regression mixture models.")
     } else if (any(!ind)) {
@@ -56,7 +57,7 @@ setMethod("plotDmmScatter", signature=c(object="Demuxmix", hto="ANY"),
       stop("Invalid HTO identifier.")
     }
     models <- object@models[hto]
-    ind <- sapply(models, isa, "RegMixModel")
+    ind <- sapply(models, is, "RegMixModel")
     if (sum(ind) == 0) {
       stop("The specified models are not regression mixture models.")
     } else if (any(!ind)) {
