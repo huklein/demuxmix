@@ -17,20 +17,13 @@ dmmPreprocess <- function(hto, rna, k.hto=1.5, k.rna=1.5) {
   th <- qrtls[2] + (k.hto * (qrtls[2] - qrtls[1]))
   outlierHto <- hto > th
   
-  # RNA outliers
   if (missing(rna)) {
-    if (sum(outlierHto)/length(outlierHto) >= 0.03) {
-      warning("More than 3% of the cells have been identified as outliers and excluded from model fitting. Consider increasing k.hto and check the initial clustering by demuxmix:::dmmPreprocess.")
-    }
     return(data.frame(hto=hto, cluster=clusterInit, outlier=outlierHto))
+  # RNA outliers
   } else {
     qrtls <- quantile(rna, probs=c(0.25, 0.75))
     th <- qrtls[2] + (k.hto * (qrtls[2] - qrtls[1]))
     outlierRna <- rna > th
-    
-    if (sum(outlierHto | outlierRna)/length(outlierHto) >= 0.05) {
-      warning("More than 5% of the cells have been identified as outliers and excluded from model fitting. Consider increasing k.hto and/or k.rna and check the initial clustering by demuxmix:::dmmPreprocess.")
-    }
     return(data.frame(hto=hto, rna=rna, cluster=clusterInit, outlier=outlierHto | outlierRna))
   }
 }
@@ -393,6 +386,14 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
                   tailException=tailException,
                   modelSelection=modelSelection,
                   parameters=parameters)
+  
+  # Print warning if >= 10% of cells were excluded for model fitting for any HTO
+  percOutlier <- apply(dmm@outliers, 1, sum) / ncol(dmm@outliers)
+  ind <- percOutlier > 0.1
+  if (any(ind)) {
+    warning(paste("More than 10% of the cell have been identified as outliers and were excluded from model fitting (not removed from the data). Please check the distribution of the HTO counts, the initial clustering stored in the slot clusterInit, and consider increasing k.hto and k.rna if needed. HTO(s) affected:", paste(names(percOutlier)[ind], collapse=", ")))
+  }
+  
   return(dmm)
 }
 

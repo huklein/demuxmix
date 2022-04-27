@@ -1,6 +1,6 @@
 Package: demuxmix
 Title: Demultiplexing hashtagged cells using regression mixture models
-Version: 0.1.3
+Version: 0.1.4
 Date: 2022-04-27
 Description: A package for demultiplexing single-cell sequencing experiments
     of pooled cells that were labelled with barcoded antibodies. The package
