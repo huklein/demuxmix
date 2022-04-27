@@ -27,18 +27,18 @@ demuxmix(
 and each column to a cell barcode. The matrix must have unique row names.}
 
 \item{rna}{An optional numeric vector with the number of genes detected in
-the RNA library for each cell. Same length as columns in \code{object}.
+the RNA library for each cell. Same length as columns in \code{hto}.
 If missing, parameter \code{model} must be set to "naive".}
 
 \item{p.acpt}{Acceptance probability that must be reached in order to
 assign a cell to a hashtag. Cells with lower probabilities are classified
-as "uncertain".}
+as "uncertain". This parameter can be changed after running demuxmix by
+applying \code{\link{p.acpt<-}} on the returned object.}
 
 \item{model}{A character specifying the type of mixture model to be used.
 Either "naive", "regpos", "reg" or "auto". The last three options
 require parameter \code{rna} to be specified. "auto" selects the best
-model based on maximum difference between the two components of the
-mixture models.}
+model based on the expected error probability summed over all cells.}
 
 \item{alpha}{Threshold defining the left tail of the mixture
 distribution where cells should not be classified as "positive". Threshold
@@ -77,16 +77,16 @@ Numbers of detected genes larger than the 0.75 quantile +
 \description{
 This methods uses mixture models as a probabilistic framework to assign
 cells to hashtags and to identify multiplets based on counts obtained from
-a hastag oligo (HTO) library. If the numbers of detected genes
+a hastag oligonucleotide (HTO) library. If the numbers of detected genes
 from the corresponding RNA library are passed as second argument,
-regression mixture models can be used, which usually improves the
+regression mixture models can be used, which often improves the
 classification accuracy by leveraging the relationship between HTO and RNA
-counts.
+read counts.
 }
 \details{
 The single cell dataset should undergo basic filtering to
   remove low quality or empty droplets before calling this function,
-  but the HTO counts themselves should not be transformed or pre-processed
+  but the HTO counts should not be transformed or pre-processed
   otherwise. The number of detected genes passed via the optional argument
   \code{rna} is typically defined as the number of genes in the RNA library
   with at least one read.
@@ -97,26 +97,29 @@ The single cell dataset should undergo basic filtering to
   model using the given number of detected genes (\code{rna}) as covariate
   in the regression model. "regpos" uses a regression model only for the
   positive but not for the negative component. If model is set to "auto",
-  all three models are fitted and the model with the largest difference
-  between the two components (best separation) is selected. In most HTO
-  datasets, regression mixture models perform better.
+  all three models are fitted and the model with the lowest posterior
+  classification error probability summed over all cells is selected.
+  Details are stored in the slot /code{modelSelection} of the returned
+  object. Regression mixture models often perform better with real HTO
+  data unless the multiplexed samples consist of different cell types with
+  distinct overall RNA abundances.
   
   The \code{demuxmix} method consists of 3 steps, which can be tuned
   by the respective parameters. The default settings work well for a wide
-  range of datasets and should only be changed if any issues arise during
+  range of datasets and only need to be changed if any issues arise during
   model fitting and quality control. An exception is the acceptance
   probability \code{p.acpt}, which may be set to smaller or larger value
-  depending on the desired tradeoff between number of unclassified/discarded
-  cells and error rate. Steps 1 and 2 are executed for each hashtag
-  separately using only the hto counts for that hashtag; step 3 classifies
-  the cells based on the results from all hashtags. Therefore, parameters
-  affecting steps 1 and 2 (incl. \code{model}) can be specified for each
-  hashtag using a vector with one element per hashtag. Shorter vectors will
-  be extended.
+  depending on the desired trade-off between number of
+  unclassified/discarded cells and error rate. Steps 1 and 2 are executed\
+  for each hashtag separately using only the HTO counts for that hashtag;
+  step 3 classifies the cells based on the results from all hashtags.
+  Therefore, parameters affecting steps 1 and 2 (incl. \code{model}) can be
+  specified for each hashtag using a vector with one element per hashtag.
+  Shorter vectors will be extended.
   
   \enumerate{
     \item Preprocessing (\code{k.hto}, \code{k.rna}). Cells are clustered
-    into a negative and a positive group based on the hto counts of the
+    into a negative and a positive group based on the HTO counts of the
     hashtag using k-means. Cells in the positive group with hto counts
     larger than \code{k.hto} times the IQR of the hto counts in the positive
     group are marked as outliers. Outliers are still classified but will
@@ -139,7 +142,7 @@ The single cell dataset should undergo basic filtering to
     or "auto", it also defines the maximum number of iterations to fit the
     negative binomial regression models within each EM iteration. \code{tol}
     defines the convergence criterion for the EM algorithm. The algorithm
-    stops if \eqn{\Delta LL/LL \le} \code{tol}. After the mixture model has
+    stops if \eqn{\DeltaLL/LL \le} \code{tol}. After the mixture model has
     been fitted, the posterior probability that cell X is positive for
     the hashtag \eqn{P(X = pos)} is calculated. Depending on the given data,
     these probabilities can be inaccurate at the far tails of the mixture
