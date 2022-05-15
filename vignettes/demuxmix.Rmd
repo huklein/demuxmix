@@ -1,8 +1,8 @@
 ---
-title: "Demultiplexing scRNA-seq data with demuxmix"
+title: "Demultiplexing barcoded scRNA-seq data with demuxmix"
 author:
 - name: Hans-Ulrich Klein
-  affiliation: Columbia University Irving Medical Center, New York, NY
+  affiliation: Center for Translational and Computational Neuroimmunology, Columbia University Irving Medical Center, New York, NY
 output:
   BiocStyle::html_document:
     toc_float: true
@@ -23,7 +23,32 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-[to do]
+Single-cell RNA sequencing (scRNA-seq) has become a frequently used tool in
+biomedical research to interrogate the transcriptomes of several thousands
+of cells. Pooling cells from different samples or treatments prior to sequencing
+can be beneficial for reducing batch effects and processing costs. The task of
+assigning each cell of a pooled sample to its original sample is called
+demultiplexing. If genetically divers samples are pooled, single nucleotide
+polymorphisms in coding regions can be used to demultiplex the sample. For
+genetically similar or identical samples, an additional experimental step is
+required to label the cells with an oligonucleotide (barcode) unique to each of
+the original samples. Techniques have been developed to label cells or nuclei
+based on antibodies [REF]. Alternatively, lipids can be used instead of 
+antibodies [REF]. These methods have in common that they label the cells with
+oligonucleotides, termed hashtag oligonucleotides (HTOs), which are sequenced
+along with the RNA molecules of the cells resulting in an (HTO x cells) count
+matrix in addition to the (genes x cells) matrix with RNA read counts.
+
+The demuxmix package implements a method to demultiplex cells based on HTO
+counts using negative binomial mixture models. demuxmix can be applied to the
+HTO counts only, but better results can often be achieved if the total number
+of genes detected in each cell (not the full transcription profile) is also
+provided to leverage the positive association between between genes detected
+and HTO counts. In this case, demuxmix employs regression mixture models.
+Using a probabilistic mixture model framework, demuxmix also provides
+estimated error rates, plots for data quality assessment, and multiplet
+identification as outlined in the example workflows of this vignette. Technical
+details of the methods are described in the publication and in the man pages.
 
 
 # Quick start
@@ -292,12 +317,12 @@ plotDmmScatter(dmm)
 ```
 The color of the dots indicates the posterior probability of the cell being
 tagged by the HTO. A cell with many detected genes is required to have more
-HTO reads in order to be classified as positive. If classic mixture models were
+HTO reads in order to be classified as positive. If naive mixture models were
 used, the seperation between blue (negative) and red (positive) cells would be
 a vertical line.
 
 
-## Session Info
+# Session Info
 ```{r sessionInfo}
 sessionInfo()
 ```
