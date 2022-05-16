@@ -1,0 +1,41 @@
+#' Hashtag oligonucleotide (HTO) counts from 2,590 pooled cells
+#'
+#' Cerebral spinal fluid (CSF) cells and peripheral blood mononuclear cells
+#' (PBMCs) were pooled and prepared for single-cell sequencing using the
+#' 10x Chromium System. Due to the low numbers of cells obtained from CSF, only
+#' the PBMCs were stained using oligonucleotide-labeled antibodies
+#' (BioLegend TotalSeq-A0257). CSF cells and PBMCs in this dataset were obtained
+#' from two genetically diverse individuals so that genetic demultiplexing could
+#' be used to validate the HTO-based demultiplexing. Genetic demultiplexing was
+#' performed with freemuxlet, which is part of the popscle software package.
+#'
+#' @format A data frame with 2,590 rows and 4 variables:
+#' \describe{
+#'   \item{HTO}{Number of HTO counts observed}
+#'   \item{NumGenes}{Number of genes detected in the cell}
+#'   \item{freemuxlet}{Genetic demultiplexing result}
+#'   \item{freemuxlet.prob}{Posterior probability from genetic demultiplexing
+#'     in logarithmic scale}
+#' }
+#' 
+#' Raw sequencing data was aligned and processed using Cell Ranger 6.0.1. All
+#' droplets that passed Cell Ranger's default filtering step were read in. Genes
+#' with at least one read were considered as detected. Since Cell Ranger's
+#' threshold to identify non-empty droplets is relatively lenient, some cells
+#' have as few as 30-50 genes detected. For most analyses, it is recommended
+#' to remove cells with less than about 200 detected genes
+#' before demultiplexing.
+#'
+#' @source Center for Translational and Computational Neuroimmunology,
+#'   Department of Neurology, Columbia University Irving Medical Center,
+#'   contact: Hans-Ulrich Klein (hk2948@cumc.columbia.edu)
+#' @docType data
+#' @name csf
+#' @usage data(csf)
+#' @examples
+#' data(csf)
+#' csf <- csf[csf$NumGenes >= 200, ]
+#' hto <- t(matrix(csf$HTO, dimnames=list(rownames(csf), "HTO")))
+#' dmm <- demuxmix(hto, model="naive")
+#' summary(dmm)
+"csf"
