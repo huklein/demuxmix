@@ -102,7 +102,7 @@
 #'     or "auto", it also defines the maximum number of iterations to fit the
 #'     negative binomial regression models within each EM iteration. \code{tol}
 #'     defines the convergence criterion for the EM algorithm. The algorithm
-#'     stops if \eqn{\DeltaLL/LL \le} \code{tol}. After the mixture model has
+#'     stops if \eqn{\Delta LL/LL \le} \code{tol}. After the mixture model has
 #'     been fitted, the posterior probability that cell X is positive for
 #'     the hashtag \eqn{P(X = pos)} is calculated. Depending on the given data,
 #'     these probabilities can be inaccurate at the far tails of the mixture
