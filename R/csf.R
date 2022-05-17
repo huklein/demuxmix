@@ -39,3 +39,19 @@
 #' dmm <- demuxmix(hto, model="naive")
 #' summary(dmm)
 "csf"
+
+# Code used to read in the dataset:
+# library(SingleCellExperiment)
+# library(DropletUtils)
+# fm <- read.table("freemuxlet/HK03/HK03.clust1.samples.gz", header=TRUE, stringsAsFactors=FALSE)
+# rownames(fm) <- fm$BARCODE
+# 
+# sce <- read10xCounts("cellRangerCount/HK03/outs/filtered_feature_bc_matrix", col.names=TRUE)
+# ncol(sce) # 2590
+# fm <- fm[colnames(sce), ]
+# 
+# csf <- data.frame(HTO=assay(sce)["HTO_7",],
+#                   NumGenes=apply(assay(sce)[!grepl("HTO_7", rownames(sce)),] > 0, 2, sum),
+#                   freemuxlet=fm$BEST.GUESS,
+#                   freemuxlet.prob=fm$BEST.POSTERIOR)
+# save(csf, file="csf.RData")

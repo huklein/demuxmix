@@ -389,9 +389,9 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
   
   # Print warning if >= 10% of cells were excluded for model fitting for any HTO
   percOutlier <- apply(dmm@outliers, 1, sum) / ncol(dmm@outliers)
-  ind <- percOutlier > 0.1
+  ind <- percOutlier > 0.15
   if (any(ind)) {
-    warning(paste("More than 10% of the cell have been identified as outliers and were excluded from model fitting (not removed from the data). Please check the distribution of the HTO counts, the initial clustering stored in the slot clusterInit, and consider increasing k.hto and k.rna if needed. HTO(s) affected:", paste(names(percOutlier)[ind], collapse=", ")))
+    warning(paste("More than 15% of the cell have been identified as outliers and were excluded from model fitting (not removed from the data). Please check the distribution of the HTO counts, the initial clustering stored in the slot clusterInit, and consider increasing k.hto and k.rna if needed. HTO(s) affected:", paste(names(percOutlier)[ind], collapse=", ")))
   }
   
   return(dmm)
