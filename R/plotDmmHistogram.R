@@ -10,9 +10,9 @@
   pi <- getPi(model)
   
   if (is(model, "NaiveMixModel")) {
-    xlab <- paste(model@htoId, "counts")
+    xlab <- paste(model@htoId, "HTO counts")
   } else {
-    xlab <- paste(model@htoId, "counts (adjusted for RNA)")
+    xlab <- paste(model@htoId, "HTO counts (adjusted for RNA)")
   }
   
   comp1 <- function(x) {

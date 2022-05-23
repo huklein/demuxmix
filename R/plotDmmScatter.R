@@ -3,17 +3,17 @@
 .plotDmmScatter <- function(model, log=TRUE, pointsize=1.2) {
 
   hto <- getHto(model, standardize=FALSE)
-  rna <- model@fit2$model$rna
+  rna <- exp(model@fit2$model$rna)
   posteriorProb <- getPosteriorProbability(model)
   
   if (log) {
     df <- data.frame(hto=log10(hto+1), rna=log10(rna+1), posteriorProb=posteriorProb[, 2])
-    xlab <- substitute(paste(log[10], nn, sep=""), list(nn=paste("(", model@htoId, " counts)", sep="")))
+    xlab <- substitute(paste(log[10], nn, sep=""), list(nn=paste("(", model@htoId, " HTO counts)", sep="")))
     ylab <- expression('log'[10]*'(RNA features detected)')
   
   } else {
     df <- data.frame(hto=hto, rna=rna, posteriorProb=posteriorProb[, 2])
-    xlab <- paste(model@htoId, "count")
+    xlab <- paste(model@htoId, " HTO counts")
     ylab <- "RNA features detected"
   }
   
