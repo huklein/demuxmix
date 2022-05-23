@@ -217,7 +217,7 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
   posteriorP <- (pi.f / apply(pi.f, 1, sum))[, 2]
   Pneg.grX <- pnbinom(hto - 1, mu=mu1, size=theta1, lower.tail=FALSE)  # P(X >= x)
   Ppos.smX <- pnbinom(hto, mu=mu2, size=theta2, lower.tail=TRUE)       # P(X <= x)
-  posteriorP[is.na(posteriorP) & Ppos.smX == 1] <- 1  # Extreme large HTO counts where both components have P(X=x) = 0
+  posteriorP[is.na(posteriorP) & Ppos.smX == 1] <- 1  # Extremely large HTO counts where both components have P(X=x) = 0
   stopifnot(!any(is.na(posteriorP)))
   
   tailException <- rep(FALSE, length(hto))
@@ -387,7 +387,7 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
                   modelSelection=modelSelection,
                   parameters=parameters)
   
-  # Print warning if >= 10% of cells were excluded for model fitting for any HTO
+  # Print warning if >= 15% of cells were excluded for model fitting for any HTO
   percOutlier <- apply(dmm@outliers, 1, sum) / ncol(dmm@outliers)
   ind <- percOutlier > 0.15
   if (any(ind)) {
