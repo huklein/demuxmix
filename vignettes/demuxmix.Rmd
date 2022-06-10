@@ -330,8 +330,8 @@ plotDmmScatter(dmm)
 The color of the dots indicates the posterior probability of the cell being
 tagged by the HTO. A cell with many detected genes is required to have more
 HTO reads in order to be classified as positive. If naive mixture models were
-used, the seperation between blue (negative) and red (positive) cells would be
-a vertical line.
+used, the dashed decision boundaries between blue (negative) and red (positive)
+cells would be vertical lines.
 
 
 # Special usecase: pooling unlabeled with labeled cells
