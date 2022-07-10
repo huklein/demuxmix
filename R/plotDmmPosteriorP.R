@@ -3,10 +3,11 @@
   
   posteriorProb <- getPosteriorProbability(model)
   df <- data.frame(posteriorProb=posteriorProb[, 2])
+  xlab <- paste("Posterior probability", model@htoId)
   
   p <- ggplot(df, aes(x=posteriorProb)) +
     geom_histogram(bins=bins) +
-    xlab("Posterior probability") +
+    xlab(xlab) +
     ylab("Number of cells")
 
   return(p)
