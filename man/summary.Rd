@@ -26,7 +26,7 @@ summarizing the classification results and expected error rates.
 }
 \details{
 Results are summarized for the individual hashtags, for all
-  singletons combined, for all multiplets combined, and for the negative
+  singlets combined, for all multiplets combined, and for the negative
   class. Relative frequencies are calculated after excluding the
   "uncertain" class. The estimated number of false positive cells and the
   estimated FDR are based on several assumptions, one of which is the

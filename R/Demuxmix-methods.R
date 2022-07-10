@@ -85,7 +85,7 @@ summary.Demuxmix <- function(object, ...) {
   dmmResults$HTO[dmmResults$Type == "multiplet" & dmmResults$HTO != "uncertain"] <- "multiplet"
   
   # Get all classes and sort them
-  otherClasses <- c("singleton", "multiplet", "negative", "uncertain")
+  otherClasses <- c("singlet", "multiplet", "negative", "uncertain")
   htoClasses <- sort(unique(dmmResults$HTO))
   htoClasses <- htoClasses[! htoClasses %in% otherClasses]
   
@@ -103,13 +103,13 @@ summary.Demuxmix <- function(object, ...) {
     classSummary$ExpFPs[classSummary$Class == class] <- sum(1 - dmmResults$Prob[ind])
     classSummary$FDR[classSummary$Class == class] <- classSummary$ExpFPs[classSummary$Class == class] / classSummary$NumObs[classSummary$Class == class]
   }
-  # all singletons combined
+  # all singlets combined
   ind <- dmmResults$HTO %in% htoClasses
-  classSummary$NumObs[classSummary$Class == "singleton"] <- sum(ind)
-  classSummary$RelFreq[classSummary$Class == "singleton"] <- sum(ind) / length(ind)
-  classSummary$MedProb[classSummary$Class == "singleton"] <- median(dmmResults$Prob[ind])
-  classSummary$ExpFPs[classSummary$Class == "singleton"] <- sum(1 - dmmResults$Prob[ind])
-  classSummary$FDR[classSummary$Class == "singleton"] <- classSummary$ExpFPs[classSummary$Class == "singleton"] / classSummary$NumObs[classSummary$Class == "singleton"]
+  classSummary$NumObs[classSummary$Class == "singlet"] <- sum(ind)
+  classSummary$RelFreq[classSummary$Class == "singlet"] <- sum(ind) / length(ind)
+  classSummary$MedProb[classSummary$Class == "singlet"] <- median(dmmResults$Prob[ind])
+  classSummary$ExpFPs[classSummary$Class == "singlet"] <- sum(1 - dmmResults$Prob[ind])
+  classSummary$FDR[classSummary$Class == "singlet"] <- classSummary$ExpFPs[classSummary$Class == "singlet"] / classSummary$NumObs[classSummary$Class == "singlet"]
   # uncertain
   classSummary$NumObs[classSummary$Class == "uncertain"] <- nUncertain
   return(classSummary)

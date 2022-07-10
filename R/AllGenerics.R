@@ -126,7 +126,7 @@
 #'     \item Classification (\code{p.acpt}). The posterior probabilities
 #'     obtained from the models fitted to each hashtag separately are 
 #'     used to calculate the most likely class for each cell. The following
-#'     classes are considered: one class for each hashtag (singletons), one
+#'     classes are considered: one class for each hashtag (singlets), one
 #'     class for each possible multiplet, and a negative class representing
 #'     droplets negative for all hashtags (i.e. empty droplets or droplets
 #'     containing only cell debris). Each cell is assigned to the most
@@ -204,7 +204,7 @@ setGeneric("demuxmix",
 #' @return A \code{data.frame} with 3 columns and one row for each cell
 #'   in the dataset. The first column gives the class (HTO) the cell has been
 #'   assigned to. The second column contains the posterior probability. And the
-#'   third column specifies the type of the assigned class, i.e., singleton,
+#'   third column specifies the type of the assigned class, i.e., singlet,
 #'   multiplet, negative or uncertain.
 #' 
 #' @seealso \code{\link{demuxmix}}
@@ -376,7 +376,7 @@ setGeneric("dmmSimulateHto",
 #' @param ... Additional parameters (ignored).
 #' 
 #' @details Results are summarized for the individual hashtags, for all
-#'   singletons combined, for all multiplets combined, and for the negative
+#'   singlets combined, for all multiplets combined, and for the negative
 #'   class. Relative frequencies are calculated after excluding the
 #'   "uncertain" class. The estimated number of false positive cells and the
 #'   estimated FDR are based on several assumptions, one of which is the

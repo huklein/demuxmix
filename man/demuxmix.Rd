@@ -166,7 +166,7 @@ The single cell dataset should undergo basic filtering to
     \item Classification (\code{p.acpt}). The posterior probabilities
     obtained from the models fitted to each hashtag separately are 
     used to calculate the most likely class for each cell. The following
-    classes are considered: one class for each hashtag (singletons), one
+    classes are considered: one class for each hashtag (singlets), one
     class for each possible multiplet, and a negative class representing
     droplets negative for all hashtags (i.e. empty droplets or droplets
     containing only cell debris). Each cell is assigned to the most
