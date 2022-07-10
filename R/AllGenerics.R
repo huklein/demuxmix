@@ -1,33 +1,33 @@
 #' Demultiplexing using mixture models
 #'
 #' This methods uses mixture models as a probabilistic framework to assign
-#' cells to hashtags and to identify multiplets based on counts obtained from
-#' a hastag oligonucleotide (HTO) library. If the numbers of detected genes
+#' droplets to hashtags and to identify multiplets based on counts obtained from
+#' a hashtag oligonucleotide (HTO) library. If the numbers of detected genes
 #' from the corresponding RNA library are passed as second argument,
 #' regression mixture models can be used, which often improves the
 #' classification accuracy by leveraging the relationship between HTO and RNA
 #' read counts.
 #' 
 #' @param hto A matrix of HTO counts where each row corresponds to a hashtag
-#'   and each column to a cell barcode. The matrix must have unique row names.
+#'   and each column to a droplet. The matrix must have unique row names.
 #' @param rna An optional numeric vector with the number of genes detected in
-#'   the RNA library for each cell. Same length as columns in \code{hto}.
+#'   the RNA library for each droplet. Same length as columns in \code{hto}.
 #'   If missing, parameter \code{model} must be set to "naive".
 #' @param p.acpt Acceptance probability that must be reached in order to
-#'   assign a cell to a hashtag. Cells with lower probabilities are classified
-#'   as "uncertain". This parameter can be changed after running demuxmix by
-#'   applying \code{\link{p.acpt<-}} on the returned object. 
+#'   assign a droplet to a hashtag. Droplets with lower probabilities are
+#'   classified as "uncertain". This parameter can be changed after running
+#'   demuxmix by applying \code{\link{p.acpt<-}} to the returned object.
 #' @param model A character specifying the type of mixture model to be used.
 #'   Either "naive", "regpos", "reg" or "auto". The last three options
 #'   require parameter \code{rna} to be specified. "auto" selects the best
-#'   model based on the expected error probability summed over all cells.
+#'   model based on the expected error probability summed over all droplets.
 #' @param alpha Threshold defining the left tail of the mixture
-#'   distribution where cells should not be classified as "positive". Threshold
-#'   must be between 0 and 1. See details.
+#'   distribution where droplets should not be classified as "positive".
+#'   Threshold must be between 0 and 1. See details.
 #' @param beta Threshold for defining the right tail of the mixture
-#'   distribution where cells should not be classified as "negative". Threshold
-#'   must be between 0 and 1. See details.
-#' @param correctTails If \code{TRUE}, cells meeting the threshold defined by
+#'   distribution where droplets should not be classified as "negative".
+#'   Threshold must be between 0 and 1. See details.
+#' @param correctTails If \code{TRUE}, droplets meeting the threshold defined by
 #'   \code{alpha} (\code{beta}) are classified as "negative" ("positive") even
 #'   if the mixture model suggests a different classification. See details.
 #' @param tol Convergence criterion for the EM algorithm fitting the mixture
@@ -36,7 +36,7 @@
 #' @param maxIter Maximum number of iterations for the EM algorithm and
 #'   for the alternating iteration process fitting the NB regression models
 #'   within each EM iteration.
-#' @param k.hto Factor to define outliers in the HTO counts. Among cells
+#' @param k.hto Factor to define outliers in the HTO counts. Among droplets
 #'   positive for the hashtag based on initial clustering, HTO counts
 #'   larger than the 0.75 quantile + \code{k.hto} * IQR are considered
 #'   outliers. See details.
@@ -58,34 +58,32 @@
 #'   in the regression model. "regpos" uses a regression model only for the
 #'   positive but not for the negative component. If model is set to "auto",
 #'   all three models are fitted and the model with the lowest posterior
-#'   classification error probability summed over all cells is selected.
+#'   classification error probability summed over all droplets is selected.
 #'   Details are stored in the slot /code{modelSelection} of the returned
-#'   object. Regression mixture models often perform better with real HTO
-#'   data unless the multiplexed samples consist of different cell types with
-#'   distinct overall RNA abundances.
+#'   object. In most real HTO datasets, regression mixture models outperform
+#'   the naive mixture model.
 #'   
 #'   The \code{demuxmix} method consists of 3 steps, which can be tuned
 #'   by the respective parameters. The default settings work well for a wide
-#'   range of datasets and only need to be changed if any issues arise during
-#'   model fitting and quality control. An exception is the acceptance
-#'   probability \code{p.acpt}, which may be set to smaller or larger value
-#'   depending on the desired trade-off between number of
-#'   unclassified/discarded cells and error rate. Steps 1 and 2 are executed\
-#'   for each hashtag separately using only the HTO counts for that hashtag;
-#'   step 3 classifies the cells based on the results from all hashtags.
-#'   Therefore, parameters affecting steps 1 and 2 (incl. \code{model}) can be
-#'   specified for each hashtag using a vector with one element per hashtag.
-#'   Shorter vectors will be extended.
+#'   range of datasets and usually do not need to be adapted unless any issues
+#'   arise during model fitting and quality control. An exception is the
+#'   acceptance probability \code{p.acpt}, which may be set to smaller or
+#'   larger value depending on the desired trade-off between number of
+#'   unclassified/discarded droplets and error rate. Steps 1 and 2 are executed
+#'   for each HTO separately; step 3 classifies the droplets based on the
+#'   results from all HTOs. Therefore, parameters affecting steps 1 and 2
+#'   (incl. \code{model}) can be specified for each HTO using a vector with
+#'   one element per HTO. Shorter vectors will be extended.
 #'   
 #'   \enumerate{
-#'     \item Preprocessing (\code{k.hto}, \code{k.rna}). Cells are clustered
-#'     into a negative and a positive group based on the HTO counts of the
-#'     hashtag using k-means. Cells in the positive group with hto counts
-#'     larger than \code{k.hto} times the IQR of the hto counts in the positive
+#'     \item Preprocessing (\code{k.hto}, \code{k.rna}). Droplets are clustered
+#'     into a negative and a positive group based on the HTO counts using
+#'     k-means. Droplets in the positive group with HTO counts larger than
+#'     \code{k.hto} times the IQR of the HTO counts in the positive
 #'     group are marked as outliers. Outliers are still classified but will
-#'     not be used to fit the mixture model for this hashtag in step 2. If
+#'     not be used to fit the mixture model for this HTO in step 2. If
 #'     the parameter \code{rna} is given and the \code{model} is "reg" or
-#'     "regpos", all cells (both groups) with number of detected genes larger
+#'     "regpos", all droplets (both groups) with number of detected genes larger
 #'     than k.rna times the IQR are marked as outliers, too, since these cells 
 #'     could affect the fitting of the regression model negatively. If more
 #'     than 5\% of the cells are marked as outliers, a warning message is
@@ -103,19 +101,19 @@
 #'     negative binomial regression models within each EM iteration. \code{tol}
 #'     defines the convergence criterion for the EM algorithm. The algorithm
 #'     stops if \eqn{\Delta LL/LL \le} \code{tol}. After the mixture model has
-#'     been fitted, the posterior probability that cell X is positive for
+#'     been fitted, the posterior probability that droplet X is positive for
 #'     the hashtag \eqn{P(X = pos)} is calculated. Depending on the given data,
 #'     these probabilities can be inaccurate at the far tails of the mixture
 #'     distribution. Specifically, a positive component with large variance can
 #'     have a larger value close to zero than the negative component, if the
-#'     negative component is narrow and shifted to the right due to ambient
-#'     hashtags. If \code{correctTails} is \code{TRUE}, the following two rules
-#'     are applied to avoid false classifications at the at the far tails.
-#'     First, if a cell X is classified as positive based on the posterior
+#'     negative component is narrow and shifted to the right due to background
+#'     HTO reads. If \code{correctTails} is \code{TRUE}, the following two rules
+#'     are applied to avoid false classifications at the far tails.
+#'     First, if a droplet X is classified as positive based on the posterior
 #'     probability, but the probability to detected more than the observed
-#'     \eqn{h_x} hashtags in a negative cell is \eqn{P(H \ge h_x | neg)} >
+#'     \eqn{h_x} HTO counts in a negative droplet is \eqn{P(H \ge h_x | neg)} >
 #'     \code{alpha}, then \eqn{P(X = pos)} is set to 0 (left tail). Second,
-#'     if a cell X is classified as negative, but \eqn{P(H \le h_x | pos)} >
+#'     if a droplet X is classified as negative, but \eqn{P(H \le h_x | pos)} >
 #'     \code{beta}, \eqn{P(X = pos)} is set to 1 (right tail). For most
 #'     datasets, these rules will not apply and it's recommended not to change
 #'     these values. If \code{correctTails} is \code{FALSE}, posterior
@@ -124,17 +122,17 @@
 #'     object.
 #'     
 #'     \item Classification (\code{p.acpt}). The posterior probabilities
-#'     obtained from the models fitted to each hashtag separately are 
+#'     obtained from the models fitted to each HTO separately are 
 #'     used to calculate the most likely class for each cell. The following
-#'     classes are considered: one class for each hashtag (singlets), one
+#'     classes are considered: one class for each HTO (singlets), one
 #'     class for each possible multiplet, and a negative class representing
-#'     droplets negative for all hashtags (i.e. empty droplets or droplets
-#'     containing only cell debris). Each cell is assigned to the most
+#'     droplets negative for all HTOs (i.e. empty droplets or droplets
+#'     containing only cell debris). Each droplet is assigned to the most
 #'     likely class unless the probability is smaller than \code{p.acpt},
-#'     in which case the cell is assigned to the class "uncertain". Apply the
-#'     method \code{\link{dmmClassify}} to an object returned by \code{demuxmix}
-#'     to obtain the classification results. The acceptance probability
-#'     can be changed after running \code{demuxmix} using
+#'     in which case the droplet is assigned to the class "uncertain".
+#'     Classification results can be accessed by running
+#'     \code{\link{dmmClassify}} to an object returned by \code{demuxmix}. The
+#'     acceptance probability can be changed after running \code{demuxmix} using
 #'     \code{\link{p.acpt<-}}.
 #'   }
 #'   
@@ -185,24 +183,24 @@ setGeneric("demuxmix",
 #' Return classification results from a Demuxmix object
 #' 
 #' This method uses the posterior probabilities from the given demuxmix model
-#' to assign each cell to the most likely class, either a single HTO,
-#' a combination of HTOs (multiplet) or the negative class (not hashtagged
+#' to assign each droplet to the most likely class, either a single HTO,
+#' a combination of HTOs (multiplet) or the negative class (non-labeled
 #' cells, empty droplets, cell debris). If the assignment cannot be made with
-#' certainty above a defined threshold, the cell is labeled as "uncertain".
+#' certainty above a defined threshold, the droplet is labeled as "uncertain".
 #' 
 #' @param object An object of class \code{\link{Demuxmix}}.
 #' 
-#' @details A cell is labeled as "uncertain" if the posterior probability of
+#' @details A droplet is labeled as "uncertain" if the posterior probability of
 #'   the most likely class is smaller than the threshold \code{p.acpt}, which
 #'   is stored in the given \code{\link{Demuxmix}} object. The acceptance
 #'   probability \code{p.acpt} can be inspected and set to a different value
 #'   by applying the getter/setter method \code{\link{p.acpt}} to the
 #'   \code{\link{Demuxmix}} object before calling this method. The method
-#'   \code{\link{summary}} is useful to investigate the effect of and to
+#'   \code{\link{summary}} is useful to inspect classification results and to
 #'   estimate error rates for different values of \code{p.acpt}.
 #' 
-#' @return A \code{data.frame} with 3 columns and one row for each cell
-#'   in the dataset. The first column gives the class (HTO) the cell has been
+#' @return A \code{data.frame} with 3 columns and one row for each droplet
+#'   in the dataset. The first column gives the class (HTO) the droplet has been
 #'   assigned to. The second column contains the posterior probability. And the
 #'   third column specifies the type of the assigned class, i.e., singlet,
 #'   multiplet, negative or uncertain.
@@ -234,10 +232,10 @@ setGeneric("dmmClassify",
 
 
 
-#' Calculate area intersected by two components of a mixture model
+#' Calculate the intersection of two components of a mixture model
 #' 
-#' \code{dmmOverlap} integrates over the area intersected by the two
-#' components of the given mixture model. The integral should be
+#' \code{dmmOverlap} sums over the probability mass intersected by the two
+#' components of the given mixture model. The sum should be
 #' close to 0 if the HTO labeling experiment was successful.
 #'
 #' @param object An object of class \code{\link{Demuxmix}}.
@@ -246,21 +244,26 @@ setGeneric("dmmClassify",
 #' @param tol The maximum acceptable error when calculating the
 #'   area.
 #'   
-#' @details The area under both the negative and positive component is an
-#'   informative quality metric for the hashtag labeling efficiency. Values
-#'   under 0.03 can be considered as good, values larger than 0.1 are
-#'   problematic.
+#' @details The probability mass shared between the negative and positive
+#'   component is an informative quality metric for the labeling efficiency
+#'   of the HTO. Values under 0.03 can be considered as good, values larger
+#'   than 0.1 are problematic.
 #'   
-#'   The definition of the area is not obvious for a regression mixture
-#'   model since the distributions' means depend on the covariate, i.e.,
-#'   the number of detected genes in the RNA library. If a regression
-#'   mixture model is given, this method calculates for each of the two
-#'   components the weighted mean number of detected genes and uses these
+#'   The probability mass functions of the negative and positive component are
+#'   not scaled by the estimated proportions of negative and positive droplets.
+#'   Therefore, the result does not depend on the proportion of cells stained
+#'   with the HTO and the returned value lies between 0 and 1. 
+#'   
+#'   The definition of the shared probability mass is not obvious for a
+#'   regression mixture model since the distributions' means depend on the
+#'   covariate, i.e., the number of detected genes in the RNA library. If a
+#'   regression mixture model is given, this method calculates for each of the
+#'   two components the weighted mean number of detected genes and uses these
 #'   numbers to calculate the expected number of HTO counts for the negative
 #'   and positive component respectively.
 #' 
-#' @return A numeric vector with the intersection area for each HTO in the given
-#'   \code{object}.
+#' @return A numeric vector with the shared probability mass for each HTO in
+#'   the given \code{object}.
 #' 
 #' @seealso \code{\link{demuxmix}}
 #' 
@@ -295,24 +298,24 @@ setGeneric("dmmOverlap",
 #' method is to provide simple example datasets for testing and documentation.
 #'
 #' @param class A \code{matrix} of type logical defining the number of
-#'   hashtags, the number of cells, and the cells' class memberships, i.e.,
-#'   which cells have been tagged with which hashtag. Each row corresponds
-#'   to one hashtag and each column to a cell. Negative cells (all entries
-#'   in the column are \code{FALSE}) and multiplets (more than one entry are
-#'   \code{TRUE}) are allowed. If the matrix has row names, the names must be
-#'   unique and are used as hashtag names.
+#'   HTOs, the number of droplets, and the droplets' class memberships, i.e.,
+#'   which droplets contain cells that have been tagged with a certain HTO.
+#'   Each row corresponds to one HTO and each column to a droplet. Negative
+#'   droplets (all entries in the column are \code{FALSE}) and multiplets
+#'   (more than one entry are \code{TRUE}) are allowed. If the matrix has row
+#'   names, the names must be unique and are used as HTO names.
 #' @param mu Vector of expectation values of the HTO counts if a
-#'   cell is positive for the hashtag. Values are recycled if \code{mu} is
-#'   shorter than number of hashtags defined by \code{class}.
+#'   droplet is positive for the HTO. Values are recycled if \code{mu} is
+#'   shorter than number of HTOs defined by \code{class}.
 #' @param theta Vector of dispersion parameters of the HTO counts if a
-#'   cell is positive for the hashtag. Values are recycled if \code{theta} is
-#'   shorter than number of hashtags defined by \code{class}.
+#'   droplet is positive for the HTO. Values are recycled if \code{theta} is
+#'   shorter than number of HTOs defined by \code{class}.
 #' @param muAmbient Vector of expectation values of the HTO counts if a
-#'   cell is negative for the hashtag. Values are recycled if \code{mu} is
-#'   shorter than number of hashtags defined by \code{class}.
+#'   droplet is negative for the HTO. Values are recycled if \code{mu} is
+#'   shorter than number of HTOs defined by \code{class}.
 #' @param thetaAmbient Vector of dispersion parameters of the HTO counts if a
-#'   cell is negative for the hashtag. Values are recycled if \code{theta} is
-#'   shorter than number of hashtags defined by \code{class}.
+#'   droplet is negative for the HTO. Values are recycled if \code{theta} is
+#'   shorter than number of HTOs defined by \code{class}.
 #' @param muRna Single expectation value for the number of detected RNA
 #'   features.
 #' @param thetaRna Single dispersion parameter for the number of detected RNA
@@ -321,17 +324,18 @@ setGeneric("dmmOverlap",
 #' @details A vector \eqn{r} of detected RNA features (same length as columns
 #'   in \code{class}) is simulated using \code{\link[stats]{rnbinom}} with
 #'   \code{muRna} and \code{thetaRna} as parameters. HTO counts of positive
-#'   cells are then simulated using \code{\link[stats]{rnbinom}} with 
+#'   droplets are then simulated using \code{\link[stats]{rnbinom}} with 
 #'   \eqn{r} \code{mu}/\code{muRna} as expectation value and \code{theta}
-#'   as dispersion. If a cell is negative for the hastag,
+#'   as dispersion. If a droplet is negative for the HTO,
 #'   \eqn{r} \code{muAmbient}/\code{muRna} and \code{thetaAmbient}
 #'   are used respectively.
 #' 
-#' @return A list with three elements: "hto" is a matrix of same dimension as
-#'   the given \code{class} matrix and contains the simulated HTO counts.
-#'   "rna" is a vector of simulated detected number of genes (same length as
-#'   "hto" has columns). "groundTruth" is a character vector encoding the
-#'   class labels given by \code{class} as character strings for convenience.
+#' @return A list with three elements: \code{hto} is a matrix of the same
+#'   dimension as the given \code{class} matrix and contains the simulated HTO
+#'   counts. \code{rna} is a vector of simulated detected number of genes (same
+#'   length as \code{hto} has columns). \code{groundTruth} is a character
+#'   vector encoding the class labels given by \code{class} as character
+#'   strings for convenience.
 #'
 #' @seealso \code{\link{demuxmix}} 
 #' 
@@ -375,21 +379,23 @@ setGeneric("dmmSimulateHto",
 #' @param object An object of class \code{\link{Demuxmix}}.
 #' @param ... Additional parameters (ignored).
 #' 
-#' @details Results are summarized for the individual hashtags, for all
+#' @details Results are summarized for the individual HTOs, for all
 #'   singlets combined, for all multiplets combined, and for the negative
 #'   class. Relative frequencies are calculated after excluding the
-#'   "uncertain" class. The estimated number of false positive cells and the
+#'   "uncertain" class. The estimated number of false positive droplets and the
 #'   estimated FDR are based on several assumptions, one of which is the
 #'   independence of the HTO counts from different hashtags. This
-#'   assumption is unlikely for real data where HTO counts of different
-#'   hashtags are obtained from the same droplet. Generally, the positive
-#'   correlation among HTOs cause an overestimation of multiplets and
-#'   negative/empty droplets.
+#'   assumption is unlikely for real data where all HTO counts
+#'   are obtained from the same droplet. Usually, the positive
+#'   correlation among HTOs causes an overestimation of multiplets and
+#'   negative/empty droplets. Error rates are more accurate when regression
+#'   mixture models are used since the number of detected genes explains some
+#'   of the positive correlation between HTOs.
 #' 
 #' @return A \code{data.frame} with one row per class showing the number
-#'   of cells in the class (NumObs), the relative frequency of the class
-#'   (RelFreq), the median probability with which a cell was assigned to the
-#'   class (MedProb), the estimated number of cells falsely assigned to the
+#'   of droplets in the class (NumObs), the relative frequency of the class
+#'   (RelFreq), the median probability with which a droplet was assigned to the
+#'   class (MedProb), the estimated number of droplets falsely assigned to the
 #'   class (ExpFPs), and the corresponding estimated false discovery rate (FDR).
 #' 
 #' @seealso \code{\link{demuxmix}}
@@ -412,11 +418,12 @@ setGeneric("summary")
 
 
 
-#' Plotting a histogram with mixture densities
+#' Plotting a histogram with mixture probability mass function
 #' 
-#' This methods plots the mixture density and the components' densities
-#' on top of a histogram of the HTO counts used to fit the mixture model.
-#' The mixture model must be generated by \code{\link{demuxmix}}.
+#' This methods plots the mixture probability mass function with the negative
+#' and positive component on top of a histogram of the HTO counts used to fit
+#' the mixture model. The mixture model must be generated by
+#' \code{\link{demuxmix}}.
 #' 
 #' @param object An object of class \code{\link{Demuxmix}}.
 #' @param hto Optional vector specifying a subset of HTOs in \code{object} which
@@ -425,18 +432,20 @@ setGeneric("summary")
 #'   right limit of the plot's x axis.
 #' @param binwidth Width of the bins of the histogram.
 #' 
-#' @details A histogram overlaid with the densities is a standard tool to 
-#'   assess the fit of a the mixture model and trivial for a regular mixture
+#' @details A histogram overlaid with the pmf is a standard tool to 
+#'   assess the fit of a the mixture model and trivial for a naive mixture
 #'   model. However, if a regression mixture model is given, the expectation
-#'   values of the components are different for each cell and depend on the
-#'   covariates (here the number of genes detected in the cell). This method
-#'   calculates the weighted mean number of detected genes in cells in the
+#'   values of the components are different for each droplet depending on the
+#'   covariates (here the number of genes detected in the droplet). This method
+#'   calculates the weighted mean number of detected genes in droplets in the
 #'   positive and negative component, and then uses these numbers to
-#'   calculate expectation values for an average cell of the positive
-#'   and negative component. Similarly, the HTO counts shown in the histogram
+#'   calculate expectation values for an average droplet of the positive
+#'   and negative component. The HTO counts shown in the histogram
 #'   are adjusted to account for different numbers of detected genes by
 #'   replacing the original HTO counts with the expected counts given the mean
-#'   number of detected genes plus the residuals from the regression model.
+#'   number of detected genes plus the residuals from the regression model. In
+#'   other words, the effect of the number of detected genes was regressed out
+#'   before plotting the HTO counts in the histogram.
 #'   
 #'   It may be useful to zoom into the plot to obtain a better view
 #'   of the fit. To restrict the plot to a certain range on the x or y axis,
@@ -473,12 +482,12 @@ setGeneric("plotDmmHistogram",
 
 #' Plotting RNA features versus HTO counts
 #' 
-#' This methods plots the number of genes detected in a cell versus the number
-#' of sequenced HTOs. The posterior probability that the cell is positive for
-#' the HTO is indicated by a color gradient. Optionally, the decision boundary
-#' with posterior probability 0.5 can be plotted. The mixture model passed to
-#' this function must be a regression mixture model generated by
-#' \code{\link{demuxmix}}.
+#' This methods plots the number of genes detected in a droplet versus the
+#' number of sequenced HTOs. The posterior probability that the droplet is
+#' positive for the HTO is indicated by a color gradient. Optionally, the
+#' decision boundary with posterior probability 0.5 can be plotted. The mixture
+#' model passed to this function must be a regression mixture model
+#' generated by \code{\link{demuxmix}}.
 #' 
 #' @param object An object of class \code{\link{Demuxmix}}.
 #' @param hto Optional vector specifying a subset of HTOs in \code{object} which
@@ -490,15 +499,15 @@ setGeneric("plotDmmHistogram",
 #'   boundary should be added to the plot.
 #' @param tol Numeric value between 0 and 1 specifying the error tolerance of
 #'   the decision boundary, i.e., a point on the plotted line has a posterior
-#'   probability within 0.5 +- tol. Only used of \code{plotDecBoundary}
+#'   probability within 0.5 +- \code{tol}. Only used of \code{plotDecBoundary}
 #'   is \code{true}.
 #' 
 #' @details The scatterplot produced by this method is helpful to assess
 #'   the relation between the number of detected genes and the number
-#'   of HTO counts obtained for a cell. A positive association is usually
-#'   visible for the positive cells (i.e. cells treated with the oligo-labeled
-#'   antibodies). The association is often in cells modeled by the negative
-#'   component.
+#'   of HTO counts obtained for a droplet. A positive association is usually
+#'   visible for the positive cells (i.e. droplets with cells treated with the
+#'   oligo-labeled antibodies). The association is often weak/absent in the
+#'   droplets negative for the HTO.
 #'   This method can only be applied to regression mixture models and not
 #'   to naive mixture models. To see whether an \code{\link{Demuxmix}} object
 #'   contains regression mixture models, type \code{show(object)} to display
@@ -534,9 +543,8 @@ setGeneric("plotDmmScatter",
 #' Plotting a histogram of posterior probabilities
 #' 
 #' This methods plots a histogram of posterior probabilities obtained
-#' from the given mixture model. The probabilities indicate whether the
-#' cell originates from the positive component of the mixture model (i.e.
-#' treated with the oligo-labeled antibodies) or from the negative component.
+#' from the given mixture model. The posterior probabilities indicate whether
+#' the droplet likely contains a cell labeled by the respective HTO.
 #' The mixture model passed to this function must be generated by
 #' \code{\link{demuxmix}}.
 #'
@@ -545,13 +553,12 @@ setGeneric("plotDmmScatter",
 #'   should be used by this function.
 #' @param bins The number of bins of the histogram.
 #' 
-#' @details The histogram visualizes how well the positive cells can be
-#'   separated from the cells which are negative for the hashtag. Ideally, the
-#'   histogram shows many cells with a posterior probability very close
-#'   to 0 and many cells close to 1, but no or very few cells with
-#'   probabilities somewhere in between. The histogram can be useful for
-#'   guiding the selection of the acceptance probability \code{p.acpt} passed
-#'   to \code{\link{demuxmix}}.
+#' @details The histogram visualizes how well the positive droplets can be
+#'   separated from the negative droplets. Ideally, the histogram shows many
+#'   droplets with a posterior probability very close to 0 and many droplets
+#'   close to 1, but no or very few droplets with probabilities somewhere in
+#'   between. The histogram can be useful for guiding the selection of the
+#'   acceptance probability \code{p.acpt} passed to \code{\link{demuxmix}}.
 #'   
 #' @return An object of class \code{ggplot} is returned, if only one HTO is
 #'   plotted. If several HTOs are plotted simultaneously, a grid of plots is

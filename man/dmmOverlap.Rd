@@ -4,7 +4,7 @@
 \alias{dmmOverlap}
 \alias{dmmOverlap,Demuxmix,missing-method}
 \alias{dmmOverlap,Demuxmix,ANY-method}
-\title{Calculate area intersected by two components of a mixture model}
+\title{Calculate the intersection of two components of a mixture model}
 \usage{
 dmmOverlap(object, hto, tol = 0.001)
 }
@@ -18,25 +18,30 @@ should be used by this function.}
 area.}
 }
 \value{
-A numeric vector with the intersection area for each HTO in the given
-  \code{object}.
+A numeric vector with the shared probability mass for each HTO in
+  the given \code{object}.
 }
 \description{
-\code{dmmOverlap} integrates over the area intersected by the two
-components of the given mixture model. The integral should be
+\code{dmmOverlap} sums over the probability mass intersected by the two
+components of the given mixture model. The sum should be
 close to 0 if the HTO labeling experiment was successful.
 }
 \details{
-The area under both the negative and positive component is an
-  informative quality metric for the hashtag labeling efficiency. Values
-  under 0.03 can be considered as good, values larger than 0.1 are
-  problematic.
+The probability mass shared between the negative and positive
+  component is an informative quality metric for the labeling efficiency
+  of the HTO. Values under 0.03 can be considered as good, values larger
+  than 0.1 are problematic.
   
-  The definition of the area is not obvious for a regression mixture
-  model since the distributions' means depend on the covariate, i.e.,
-  the number of detected genes in the RNA library. If a regression
-  mixture model is given, this method calculates for each of the two
-  components the weighted mean number of detected genes and uses these
+  The probability mass functions of the negative and positive component are
+  not scaled by the estimated proportions of negative and positive droplets.
+  Therefore, the result does not depend on the proportion of cells stained
+  with the HTO and the returned value lies between 0 and 1. 
+  
+  The definition of the shared probability mass is not obvious for a
+  regression mixture model since the distributions' means depend on the
+  covariate, i.e., the number of detected genes in the RNA library. If a
+  regression mixture model is given, this method calculates for each of the
+  two components the weighted mean number of detected genes and uses these
   numbers to calculate the expected number of HTO counts for the negative
   and positive component respectively.
 }

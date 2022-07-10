@@ -17,28 +17,28 @@ dmmSimulateHto(
 }
 \arguments{
 \item{class}{A \code{matrix} of type logical defining the number of
-hashtags, the number of cells, and the cells' class memberships, i.e.,
-which cells have been tagged with which hashtag. Each row corresponds
-to one hashtag and each column to a cell. Negative cells (all entries
-in the column are \code{FALSE}) and multiplets (more than one entry are
-\code{TRUE}) are allowed. If the matrix has row names, the names must be
-unique and are used as hashtag names.}
+HTOs, the number of droplets, and the droplets' class memberships, i.e.,
+which droplets contain cells that have been tagged with a certain HTO.
+Each row corresponds to one HTO and each column to a droplet. Negative
+droplets (all entries in the column are \code{FALSE}) and multiplets
+(more than one entry are \code{TRUE}) are allowed. If the matrix has row
+names, the names must be unique and are used as HTO names.}
 
 \item{mu}{Vector of expectation values of the HTO counts if a
-cell is positive for the hashtag. Values are recycled if \code{mu} is
-shorter than number of hashtags defined by \code{class}.}
+droplet is positive for the HTO. Values are recycled if \code{mu} is
+shorter than number of HTOs defined by \code{class}.}
 
 \item{theta}{Vector of dispersion parameters of the HTO counts if a
-cell is positive for the hashtag. Values are recycled if \code{theta} is
-shorter than number of hashtags defined by \code{class}.}
+droplet is positive for the HTO. Values are recycled if \code{theta} is
+shorter than number of HTOs defined by \code{class}.}
 
 \item{muAmbient}{Vector of expectation values of the HTO counts if a
-cell is negative for the hashtag. Values are recycled if \code{mu} is
-shorter than number of hashtags defined by \code{class}.}
+droplet is negative for the HTO. Values are recycled if \code{mu} is
+shorter than number of HTOs defined by \code{class}.}
 
 \item{thetaAmbient}{Vector of dispersion parameters of the HTO counts if a
-cell is negative for the hashtag. Values are recycled if \code{theta} is
-shorter than number of hashtags defined by \code{class}.}
+droplet is negative for the HTO. Values are recycled if \code{theta} is
+shorter than number of HTOs defined by \code{class}.}
 
 \item{muRna}{Single expectation value for the number of detected RNA
 features.}
@@ -47,11 +47,12 @@ features.}
 features.}
 }
 \value{
-A list with three elements: "hto" is a matrix of same dimension as
-  the given \code{class} matrix and contains the simulated HTO counts.
-  "rna" is a vector of simulated detected number of genes (same length as
-  "hto" has columns). "groundTruth" is a character vector encoding the
-  class labels given by \code{class} as character strings for convenience.
+A list with three elements: \code{hto} is a matrix of the same
+  dimension as the given \code{class} matrix and contains the simulated HTO
+  counts. \code{rna} is a vector of simulated detected number of genes (same
+  length as \code{hto} has columns). \code{groundTruth} is a character
+  vector encoding the class labels given by \code{class} as character
+  strings for convenience.
 }
 \description{
 This method simulates HTO count data and corresponding numbers of detected
@@ -62,9 +63,9 @@ method is to provide simple example datasets for testing and documentation.
 A vector \eqn{r} of detected RNA features (same length as columns
   in \code{class}) is simulated using \code{\link[stats]{rnbinom}} with
   \code{muRna} and \code{thetaRna} as parameters. HTO counts of positive
-  cells are then simulated using \code{\link[stats]{rnbinom}} with 
+  droplets are then simulated using \code{\link[stats]{rnbinom}} with 
   \eqn{r} \code{mu}/\code{muRna} as expectation value and \code{theta}
-  as dispersion. If a cell is negative for the hastag,
+  as dispersion. If a droplet is negative for the HTO,
   \eqn{r} \code{muAmbient}/\code{muRna} and \code{thetaAmbient}
   are used respectively.
 }

@@ -1,36 +1,35 @@
 #' A class representing a set of mixture models fitted to HTO data.
 #'
-#' An object of this class is returned by \code{\link{demuxmix}} and
-#' stores a fitted mixture model for each hashtag of the given dataset and 
-#' additional information about model fitting. Users should not directly
-#' initialize this class but can apply various plotting functions and
-#' extract information from an object of \code{Demuxmix}. For example,
-#' \code{\link{dmmClassify}} returns the cell-to-HTO assignments obtained from
-#' the models stored in the \code{Demuxmix} object. Please see the package's
-#' vignette for how to work with an object of this class.
+#' Objects of this class store mixture models fitted to HTO data to demultiplex
+#' oligonucleotide-labeled cells. One mixture model is stored for each hashtag
+#' in the dataset. An object of this class is returned by
+#' \code{\link{demuxmix}}. Users should not directly initialize this class.
+#' There are various methods to extract or plot data from an \code{Demuxmix}
+#' object. Please see the package's vignette for how to work with an object of
+#' this class.
 #' 
-#' @param object An \code{Demuxmix} object.
+#' @param object A \code{Demuxmix} object.
 #' @param value Value between 0 and 1 specifying the acceptance probability,
-#'   i.e., the minimum posterior probability required to assign a cell to
-#'   an HTO.
+#'   i.e., the minimum posterior probability required to assign a droplet to
+#'   a hashtag.
 #' @param ... Additional arguments forwarded to summary (ignored).
 #' 
-#' @slot models A list of mixture models. One model per hashtag.
-#' @slot outliers A logical matrix of size HTO x cells identifying outlier 
+#' @slot models A list of mixture models. One model per HTO.
+#' @slot outliers A logical matrix of size HTOs x droplets identifying outlier 
 #'   values excluded from model fitting.
-#' @slot clusterInit A numeric matrix of size HTO x cells with the class
+#' @slot clusterInit A numeric matrix of size HTOs x droplets with the class
 #'   memberships used to initialize model fitting. A value of 1 corresponds to
 #'   the negative component and a value of 2 to the positive component.
-#' @slot posteriorProb A numeric matrix of size HTO x cells with the posterior
-#'   probabilities that a cell is positive for a hashtag.
-#' @slot tailException A logical matrix of size HTO x cells identifying
+#' @slot posteriorProb A numeric matrix of size HTO x droplets with the
+#'   posterior probabilities that a droplet is positive for an HTO.
+#' @slot tailException A logical matrix of size HTO x droplets identifying
 #'   posterior probabilities that would be adjusted based on the exception
 #'   rules defined when calling \code{\link{demuxmix}} to correct inaccuracies
 #'   at the extreme tails of the mixture distributions. See
 #'   \code{\link{demuxmix}} for details.
 #' @slot modelSelection A \code{data.frame} with information about the model
 #'   selection process if parameter \code{model} was set to 'auto'. Empty 
-#'   \code{data.frame} if model was specified.
+#'   \code{data.frame} if model was specified manually.
 #' @slot parameters A list with the \code{\link{demuxmix}} parameters
 #'   used to generate the model represented by this class.
 #'

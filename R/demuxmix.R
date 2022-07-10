@@ -275,7 +275,7 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
   k.hto <- rep_len(k.hto, length.out=n)
   k.rna <- rep_len(k.rna, length.out=n)
   
-  # Run preprocessing, model fitting, and classification for each hashtag
+  # Run preprocessing, model fitting, and classification for each HTO
   outliers <- matrix(NA, nrow=nrow(hto), ncol=ncol(hto))
   rownames(outliers) <- rownames(hto)
   colnames(outliers) <- colnames(hto)

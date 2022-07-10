@@ -1,4 +1,4 @@
-#' Hashtag oligonucleotide (HTO) counts from 2,590 pooled cells
+#' Hashtag oligonucleotide (HTO) counts from 2,590 droplets
 #'
 #' Cerebral spinal fluid (CSF) cells and peripheral blood mononuclear cells
 #' (PBMCs) were pooled and prepared for single-cell sequencing using the
@@ -21,9 +21,9 @@
 #' Raw sequencing data was aligned and processed using Cell Ranger 6.0.1. All
 #' droplets that passed Cell Ranger's default filtering step were read in. Genes
 #' with at least one read were considered as detected. Since Cell Ranger's
-#' threshold to identify non-empty droplets is relatively lenient, some cells
+#' threshold to identify non-empty droplets is relatively lenient, some droplets
 #' have as few as 30-50 genes detected. For most analyses, it is recommended
-#' to remove cells with less than about 200 detected genes
+#' to remove droplets with less than about 200 detected genes
 #' before demultiplexing.
 #'
 #' @source Center for Translational and Computational Neuroimmunology,

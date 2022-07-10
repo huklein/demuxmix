@@ -1,5 +1,5 @@
 #' @importFrom stats dnbinom predict
-#' @importFrom ggplot2 ggplot geom_point geom_line scale_colour_gradient2 xlab ylab aes
+#' @importFrom ggplot2 ggplot geom_point geom_line xlab ylab aes
 .plotDmmScatter <- function(model, log=TRUE, pointsize=1.2, plotDecBoundary=TRUE, tol=0.01) {
 
   hto <- getHto(model, standardize=FALSE)
@@ -38,9 +38,9 @@
 }
 
 
-# This methods numerically calculates the hto values with a posterior
+# This methods numerically calculates the HTO values with a posterior
 # probability of 0.5 for 'npoints' within a given range 'rnaRange' of RNA
-# values (number detected genes). hto values outside of the given 'htoRange'
+# values (number detected genes). HTO values outside of the given 'htoRange'
 # are removed.
 .getDecisionBoundary <- function(model, rnaRange, htoRange, tol=0.01, npoints=10, maxIter=100) {
   

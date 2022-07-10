@@ -14,9 +14,9 @@ summary(object, ...)
 }
 \value{
 A \code{data.frame} with one row per class showing the number
-  of cells in the class (NumObs), the relative frequency of the class
-  (RelFreq), the median probability with which a cell was assigned to the
-  class (MedProb), the estimated number of cells falsely assigned to the
+  of droplets in the class (NumObs), the relative frequency of the class
+  (RelFreq), the median probability with which a droplet was assigned to the
+  class (MedProb), the estimated number of droplets falsely assigned to the
   class (ExpFPs), and the corresponding estimated false discovery rate (FDR).
 }
 \description{
@@ -25,16 +25,18 @@ returned by \code{\link{demuxmix}} and returns a \code{data.frame}
 summarizing the classification results and expected error rates.
 }
 \details{
-Results are summarized for the individual hashtags, for all
+Results are summarized for the individual HTOs, for all
   singlets combined, for all multiplets combined, and for the negative
   class. Relative frequencies are calculated after excluding the
-  "uncertain" class. The estimated number of false positive cells and the
+  "uncertain" class. The estimated number of false positive droplets and the
   estimated FDR are based on several assumptions, one of which is the
   independence of the HTO counts from different hashtags. This
-  assumption is unlikely for real data where HTO counts of different
-  hashtags are obtained from the same droplet. Generally, the positive
-  correlation among HTOs cause an overestimation of multiplets and
-  negative/empty droplets.
+  assumption is unlikely for real data where all HTO counts
+  are obtained from the same droplet. Usually, the positive
+  correlation among HTOs causes an overestimation of multiplets and
+  negative/empty droplets. Error rates are more accurate when regression
+  mixture models are used since the number of detected genes explains some
+  of the positive correlation between HTOs.
 }
 \examples{
 set.seed(2642)

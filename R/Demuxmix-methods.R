@@ -44,14 +44,6 @@ setMethod("show", signature=c(object="Demuxmix"),
 )
 
 
-
-# setMethod("getPosteriorProbability", signature=c(model="Demuxmix"),
-#   function(model) {
-#     return(model@posteriorProb)
-#   }
-# )
-
-
 #' @describeIn Demuxmix-class Returns the acceptance probability \code{p.acpt}.
 setMethod("p.acpt", signature=c(object="Demuxmix"),
   function(object) {

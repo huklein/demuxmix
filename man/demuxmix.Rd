@@ -24,31 +24,31 @@ demuxmix(
 }
 \arguments{
 \item{hto}{A matrix of HTO counts where each row corresponds to a hashtag
-and each column to a cell barcode. The matrix must have unique row names.}
+and each column to a droplet. The matrix must have unique row names.}
 
 \item{rna}{An optional numeric vector with the number of genes detected in
-the RNA library for each cell. Same length as columns in \code{hto}.
+the RNA library for each droplet. Same length as columns in \code{hto}.
 If missing, parameter \code{model} must be set to "naive".}
 
 \item{p.acpt}{Acceptance probability that must be reached in order to
-assign a cell to a hashtag. Cells with lower probabilities are classified
-as "uncertain". This parameter can be changed after running demuxmix by
-applying \code{\link{p.acpt<-}} on the returned object.}
+assign a droplet to a hashtag. Droplets with lower probabilities are
+classified as "uncertain". This parameter can be changed after running
+demuxmix by applying \code{\link{p.acpt<-}} to the returned object.}
 
 \item{model}{A character specifying the type of mixture model to be used.
 Either "naive", "regpos", "reg" or "auto". The last three options
 require parameter \code{rna} to be specified. "auto" selects the best
-model based on the expected error probability summed over all cells.}
+model based on the expected error probability summed over all droplets.}
 
 \item{alpha}{Threshold defining the left tail of the mixture
-distribution where cells should not be classified as "positive". Threshold
-must be between 0 and 1. See details.}
+distribution where droplets should not be classified as "positive".
+Threshold must be between 0 and 1. See details.}
 
 \item{beta}{Threshold for defining the right tail of the mixture
-distribution where cells should not be classified as "negative". Threshold
-must be between 0 and 1. See details.}
+distribution where droplets should not be classified as "negative".
+Threshold must be between 0 and 1. See details.}
 
-\item{correctTails}{If \code{TRUE}, cells meeting the threshold defined by
+\item{correctTails}{If \code{TRUE}, droplets meeting the threshold defined by
 \code{alpha} (\code{beta}) are classified as "negative" ("positive") even
 if the mixture model suggests a different classification. See details.}
 
@@ -60,7 +60,7 @@ likelihood is less than or equal to \code{tol}.}
 for the alternating iteration process fitting the NB regression models
 within each EM iteration.}
 
-\item{k.hto}{Factor to define outliers in the HTO counts. Among cells
+\item{k.hto}{Factor to define outliers in the HTO counts. Among droplets
 positive for the hashtag based on initial clustering, HTO counts
 larger than the 0.75 quantile + \code{k.hto} * IQR are considered
 outliers. See details.}
@@ -76,8 +76,8 @@ Numbers of detected genes larger than the 0.75 quantile +
 }
 \description{
 This methods uses mixture models as a probabilistic framework to assign
-cells to hashtags and to identify multiplets based on counts obtained from
-a hastag oligonucleotide (HTO) library. If the numbers of detected genes
+droplets to hashtags and to identify multiplets based on counts obtained from
+a hashtag oligonucleotide (HTO) library. If the numbers of detected genes
 from the corresponding RNA library are passed as second argument,
 regression mixture models can be used, which often improves the
 classification accuracy by leveraging the relationship between HTO and RNA
@@ -98,34 +98,32 @@ The single cell dataset should undergo basic filtering to
   in the regression model. "regpos" uses a regression model only for the
   positive but not for the negative component. If model is set to "auto",
   all three models are fitted and the model with the lowest posterior
-  classification error probability summed over all cells is selected.
+  classification error probability summed over all droplets is selected.
   Details are stored in the slot /code{modelSelection} of the returned
-  object. Regression mixture models often perform better with real HTO
-  data unless the multiplexed samples consist of different cell types with
-  distinct overall RNA abundances.
+  object. In most real HTO datasets, regression mixture models outperform
+  the naive mixture model.
   
   The \code{demuxmix} method consists of 3 steps, which can be tuned
   by the respective parameters. The default settings work well for a wide
-  range of datasets and only need to be changed if any issues arise during
-  model fitting and quality control. An exception is the acceptance
-  probability \code{p.acpt}, which may be set to smaller or larger value
-  depending on the desired trade-off between number of
-  unclassified/discarded cells and error rate. Steps 1 and 2 are executed\
-  for each hashtag separately using only the HTO counts for that hashtag;
-  step 3 classifies the cells based on the results from all hashtags.
-  Therefore, parameters affecting steps 1 and 2 (incl. \code{model}) can be
-  specified for each hashtag using a vector with one element per hashtag.
-  Shorter vectors will be extended.
+  range of datasets and usually do not need to be adapted unless any issues
+  arise during model fitting and quality control. An exception is the
+  acceptance probability \code{p.acpt}, which may be set to smaller or
+  larger value depending on the desired trade-off between number of
+  unclassified/discarded droplets and error rate. Steps 1 and 2 are executed
+  for each HTO separately; step 3 classifies the droplets based on the
+  results from all HTOs. Therefore, parameters affecting steps 1 and 2
+  (incl. \code{model}) can be specified for each HTO using a vector with
+  one element per HTO. Shorter vectors will be extended.
   
   \enumerate{
-    \item Preprocessing (\code{k.hto}, \code{k.rna}). Cells are clustered
-    into a negative and a positive group based on the HTO counts of the
-    hashtag using k-means. Cells in the positive group with hto counts
-    larger than \code{k.hto} times the IQR of the hto counts in the positive
+    \item Preprocessing (\code{k.hto}, \code{k.rna}). Droplets are clustered
+    into a negative and a positive group based on the HTO counts using
+    k-means. Droplets in the positive group with HTO counts larger than
+    \code{k.hto} times the IQR of the HTO counts in the positive
     group are marked as outliers. Outliers are still classified but will
-    not be used to fit the mixture model for this hashtag in step 2. If
+    not be used to fit the mixture model for this HTO in step 2. If
     the parameter \code{rna} is given and the \code{model} is "reg" or
-    "regpos", all cells (both groups) with number of detected genes larger
+    "regpos", all droplets (both groups) with number of detected genes larger
     than k.rna times the IQR are marked as outliers, too, since these cells 
     could affect the fitting of the regression model negatively. If more
     than 5\% of the cells are marked as outliers, a warning message is
@@ -143,19 +141,19 @@ The single cell dataset should undergo basic filtering to
     negative binomial regression models within each EM iteration. \code{tol}
     defines the convergence criterion for the EM algorithm. The algorithm
     stops if \eqn{\Delta LL/LL \le} \code{tol}. After the mixture model has
-    been fitted, the posterior probability that cell X is positive for
+    been fitted, the posterior probability that droplet X is positive for
     the hashtag \eqn{P(X = pos)} is calculated. Depending on the given data,
     these probabilities can be inaccurate at the far tails of the mixture
     distribution. Specifically, a positive component with large variance can
     have a larger value close to zero than the negative component, if the
-    negative component is narrow and shifted to the right due to ambient
-    hashtags. If \code{correctTails} is \code{TRUE}, the following two rules
-    are applied to avoid false classifications at the at the far tails.
-    First, if a cell X is classified as positive based on the posterior
+    negative component is narrow and shifted to the right due to background
+    HTO reads. If \code{correctTails} is \code{TRUE}, the following two rules
+    are applied to avoid false classifications at the far tails.
+    First, if a droplet X is classified as positive based on the posterior
     probability, but the probability to detected more than the observed
-    \eqn{h_x} hashtags in a negative cell is \eqn{P(H \ge h_x | neg)} >
+    \eqn{h_x} HTO counts in a negative droplet is \eqn{P(H \ge h_x | neg)} >
     \code{alpha}, then \eqn{P(X = pos)} is set to 0 (left tail). Second,
-    if a cell X is classified as negative, but \eqn{P(H \le h_x | pos)} >
+    if a droplet X is classified as negative, but \eqn{P(H \le h_x | pos)} >
     \code{beta}, \eqn{P(X = pos)} is set to 1 (right tail). For most
     datasets, these rules will not apply and it's recommended not to change
     these values. If \code{correctTails} is \code{FALSE}, posterior
@@ -164,17 +162,17 @@ The single cell dataset should undergo basic filtering to
     object.
     
     \item Classification (\code{p.acpt}). The posterior probabilities
-    obtained from the models fitted to each hashtag separately are 
+    obtained from the models fitted to each HTO separately are 
     used to calculate the most likely class for each cell. The following
-    classes are considered: one class for each hashtag (singlets), one
+    classes are considered: one class for each HTO (singlets), one
     class for each possible multiplet, and a negative class representing
-    droplets negative for all hashtags (i.e. empty droplets or droplets
-    containing only cell debris). Each cell is assigned to the most
+    droplets negative for all HTOs (i.e. empty droplets or droplets
+    containing only cell debris). Each droplet is assigned to the most
     likely class unless the probability is smaller than \code{p.acpt},
-    in which case the cell is assigned to the class "uncertain". Apply the
-    method \code{\link{dmmClassify}} to an object returned by \code{demuxmix}
-    to obtain the classification results. The acceptance probability
-    can be changed after running \code{demuxmix} using
+    in which case the droplet is assigned to the class "uncertain".
+    Classification results can be accessed by running
+    \code{\link{dmmClassify}} to an object returned by \code{demuxmix}. The
+    acceptance probability can be changed after running \code{demuxmix} using
     \code{\link{p.acpt<-}}.
   }
 }
