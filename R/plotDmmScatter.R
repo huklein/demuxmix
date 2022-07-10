@@ -1,5 +1,5 @@
 #' @importFrom stats dnbinom predict
-#' @importFrom ggplot2 ggplot geom_point geom_line xlab ylab aes
+#' @importFrom ggplot2 ggplot geom_point geom_line scale_colour_gradient2 xlab ylab aes
 .plotDmmScatter <- function(model, log=TRUE, pointsize=1.2, plotDecBoundary=TRUE, tol=0.01) {
 
   hto <- getHto(model, standardize=FALSE)
