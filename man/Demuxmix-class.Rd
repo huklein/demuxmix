@@ -10,7 +10,7 @@
 \alias{p.acpt,Demuxmix-method}
 \alias{p.acpt<-}
 \alias{p.acpt<-,Demuxmix,numeric-method}
-\title{A class representing a set of mixture models fitted to HTO data.}
+\title{A class representing a set of mixture models fitted to HTO data}
 \usage{
 \S4method{show}{Demuxmix}(object)
 
@@ -34,7 +34,7 @@ Objects of this class store mixture models fitted to HTO data to demultiplex
 oligonucleotide-labeled cells. One mixture model is stored for each hashtag
 in the dataset. An object of this class is returned by
 \code{\link{demuxmix}}. Users should not directly initialize this class.
-There are various methods to extract or plot data from an \code{Demuxmix}
+There are various methods to extract or plot data from a \code{Demuxmix}
 object. Please see the package's vignette for how to work with an object of
 this class.
 }

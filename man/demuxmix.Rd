@@ -38,7 +38,8 @@ demuxmix by applying \code{\link{p.acpt<-}} to the returned object.}
 \item{model}{A character specifying the type of mixture model to be used.
 Either "naive", "regpos", "reg" or "auto". The last three options
 require parameter \code{rna} to be specified. "auto" selects the best
-model based on the expected error probability summed over all droplets.}
+model based on the classification error probability summed over all
+droplets.}
 
 \item{alpha}{Threshold defining the left tail of the mixture
 distribution where droplets should not be classified as "positive".
@@ -52,8 +53,8 @@ Threshold must be between 0 and 1. See details.}
 \code{alpha} (\code{beta}) are classified as "negative" ("positive") even
 if the mixture model suggests a different classification. See details.}
 
-\item{tol}{Convergence criterion for the EM algorithm fitting the mixture
-model(s). The algorithm stops when the relative increase of the log
+\item{tol}{Convergence criterion for the EM algorithm used to fit the mixture
+models. The algorithm stops when the relative increase of the log
 likelihood is less than or equal to \code{tol}.}
 
 \item{maxIter}{Maximum number of iterations for the EM algorithm and
@@ -75,11 +76,11 @@ Numbers of detected genes larger than the 0.75 quantile +
   Various plot methods (see below) are available to assess the model fit.
 }
 \description{
-This methods uses mixture models as a probabilistic framework to assign
+This method uses mixture models as probabilistic framework to assign
 droplets to hashtags and to identify multiplets based on counts obtained from
 a hashtag oligonucleotide (HTO) library. If the numbers of detected genes
 from the corresponding RNA library are passed as second argument,
-regression mixture models can be used, which often improves the
+regression mixture models may be used, which often improves the
 classification accuracy by leveraging the relationship between HTO and RNA
 read counts.
 }
@@ -99,7 +100,7 @@ The single cell dataset should undergo basic filtering to
   positive but not for the negative component. If model is set to "auto",
   all three models are fitted and the model with the lowest posterior
   classification error probability summed over all droplets is selected.
-  Details are stored in the slot /code{modelSelection} of the returned
+  Details are stored in the slot \code{modelSelection} of the returned
   object. In most real HTO datasets, regression mixture models outperform
   the naive mixture model.
   
@@ -109,57 +110,57 @@ The single cell dataset should undergo basic filtering to
   arise during model fitting and quality control. An exception is the
   acceptance probability \code{p.acpt}, which may be set to smaller or
   larger value depending on the desired trade-off between number of
-  unclassified/discarded droplets and error rate. Steps 1 and 2 are executed
-  for each HTO separately; step 3 classifies the droplets based on the
-  results from all HTOs. Therefore, parameters affecting steps 1 and 2
+  unclassified/discarded droplets and expected error rate. Steps 1 and 2
+  are executed for each HTO separately; step 3 classifies the droplets based
+  on the results from all HTOs. Therefore, parameters affecting steps 1 and 2
   (incl. \code{model}) can be specified for each HTO using a vector with
   one element per HTO. Shorter vectors will be extended.
   
   \enumerate{
     \item Preprocessing (\code{k.hto}, \code{k.rna}). Droplets are clustered
     into a negative and a positive group based on the HTO counts using
-    k-means. Droplets in the positive group with HTO counts larger than
-    \code{k.hto} times the IQR of the HTO counts in the positive
-    group are marked as outliers. Outliers are still classified but will
-    not be used to fit the mixture model for this HTO in step 2. If
+    k-means. Droplets in the positive group with HTO counts larger than the
+    0.75 quantile + \code{k.hto} times the IQR of the HTO counts in the
+    positive group are marked as outliers. Outliers are still classified but
+    will not be used to fit the mixture model for this HTO in step 2. If
     the parameter \code{rna} is given and the \code{model} is "reg" or
     "regpos", all droplets (both groups) with number of detected genes larger
-    than k.rna times the IQR are marked as outliers, too, since these cells 
-    could affect the fitting of the regression model negatively. If more
-    than 5\% of the cells are marked as outliers, a warning message is
-    printed and larger values for \code{k.hto} and \code{k.rna}
-    might be preferable. If the model fit seems to be affected by a few
-    large values (very high variance of the positive component), smaller
-    values should be chosen.
+    than the 0.75 quantile + k.rna times the IQR are marked as outliers, too,
+    since these cells could affect the fitting of the regression model
+    negatively. If more than 5\% of the cells are marked as outliers,
+    a warning message is printed and larger values for \code{k.hto}
+    and \code{k.rna} might be preferable. If the model fit seems to be
+    affected by a few large values (very high variance of the positive
+    component), smaller values should be chosen.
     
     \item Model fitting (\code{model}, \code{alpha}, \code{beta},
     \code{correctTails}, \code{tol}, \code{maxIter}). An EM algorithm is
-    used to fit a mixture model to the HTO counts which were not marked as
+    used to fit the mixture model to the HTO counts which were not marked as
     outliers in step 1. \code{maxIter} defines the maximum number of
     iterations of the EM algorithm, and, if \code{model} is "reg", "regpos"
     or "auto", it also defines the maximum number of iterations to fit the
     negative binomial regression models within each EM iteration. \code{tol}
     defines the convergence criterion for the EM algorithm. The algorithm
     stops if \eqn{\Delta LL/LL \le} \code{tol}. After the mixture model has
-    been fitted, the posterior probability that droplet X is positive for
-    the hashtag \eqn{P(X = pos)} is calculated. Depending on the given data,
-    these probabilities can be inaccurate at the far tails of the mixture
-    distribution. Specifically, a positive component with large variance can
-    have a larger value close to zero than the negative component, if the
-    negative component is narrow and shifted to the right due to background
-    HTO reads. If \code{correctTails} is \code{TRUE}, the following two rules
-    are applied to avoid false classifications at the far tails.
-    First, if a droplet X is classified as positive based on the posterior
-    probability, but the probability to detected more than the observed
-    \eqn{h_x} HTO counts in a negative droplet is \eqn{P(H \ge h_x | neg)} >
-    \code{alpha}, then \eqn{P(X = pos)} is set to 0 (left tail). Second,
-    if a droplet X is classified as negative, but \eqn{P(H \le h_x | pos)} >
-    \code{beta}, \eqn{P(X = pos)} is set to 1 (right tail). For most
-    datasets, these rules will not apply and it's recommended not to change
-    these values. If \code{correctTails} is \code{FALSE}, posterior
-    probabilities will not be altered, but potential problems at the tails
-    will still be logged in the slot \code{tailException} of the returned
-    object.
+    been fitted, the posterior probability that the i-th droplet is positive
+    for the hashtag \eqn{P(C_i = pos)} is calculated. Depending on the given
+    data, these probabilities can be inaccurate at the far tails of the
+    mixture distribution. Specifically, a positive component with large
+    variance can have a larger value close to zero than the negative
+    component, if the negative component is narrow and shifted to the right
+    due to background HTO reads. If \code{correctTails} is \code{TRUE}, the
+    following two rules are applied to avoid false classifications at the
+    far tails. First, if the i-th droplet is classified as positive based on
+    the posterior probability, but the probability to detected more than the
+    observed \eqn{y_i} HTO counts in a negative droplet is
+    \eqn{P(Y \ge y_i | neg)} > \code{alpha}, then \eqn{P(C_i = pos)} is set
+    to 0 (left tail). Second, if the i-th droplet is classified as negative,
+    but \eqn{P(Y \le y_i | pos)} > \code{beta}, \eqn{P(C_i = pos)} is set to
+    1 (right tail). For most datasets, these rules will not apply and it is
+    recommended not to change these values. If \code{correctTails} is
+    \code{FALSE}, posterior probabilities will not be altered, but potential
+    problems at the tails will still be logged in the slot
+    \code{tailException} of the returned object.
     
     \item Classification (\code{p.acpt}). The posterior probabilities
     obtained from the models fitted to each HTO separately are 
@@ -171,7 +172,7 @@ The single cell dataset should undergo basic filtering to
     likely class unless the probability is smaller than \code{p.acpt},
     in which case the droplet is assigned to the class "uncertain".
     Classification results can be accessed by running
-    \code{\link{dmmClassify}} to an object returned by \code{demuxmix}. The
+    \code{\link{dmmClassify}} on an object returned by \code{demuxmix}. The
     acceptance probability can be changed after running \code{demuxmix} using
     \code{\link{p.acpt<-}}.
   }

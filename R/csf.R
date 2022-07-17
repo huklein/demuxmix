@@ -3,11 +3,12 @@
 #' Cerebral spinal fluid (CSF) cells and peripheral blood mononuclear cells
 #' (PBMCs) were pooled and prepared for single-cell sequencing using the
 #' 10x Chromium System. Due to the low numbers of cells obtained from CSF, only
-#' the PBMCs were stained using oligonucleotide-labeled antibodies
-#' (BioLegend TotalSeq-A0257). CSF cells and PBMCs in this dataset were obtained
-#' from two genetically diverse individuals so that genetic demultiplexing could
-#' be used to validate the HTO-based demultiplexing. Genetic demultiplexing was
-#' performed with freemuxlet, which is part of the popscle software package.
+#' the PBMCs but not the CSF cels were stained using oligonucleotide-labeled
+#' antibodies (BioLegend TotalSeq-A0257). CSF cells and PBMCs in this dataset
+#' were obtained from two genetically diverse individuals so that genetic
+#' demultiplexing could be used to validate the HTO-based demultiplexing.
+#' Genetic demultiplexing was performed with freemuxlet, which is part of the
+#' popscle software package.
 #'
 #' @format A data frame with 2,590 rows and 4 variables:
 #' \describe{
@@ -38,6 +39,8 @@
 #' hto <- t(matrix(csf$HTO, dimnames=list(rownames(csf), "HTO")))
 #' dmm <- demuxmix(hto, model="naive")
 #' summary(dmm)
+#' certain <- exp(csf$freemuxlet.prob) >= 0.999
+#' table(dmmClassify(dmm)$HTO[certain], csf$freemuxlet[certain])
 "csf"
 
 # Code used to read in the dataset:

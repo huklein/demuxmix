@@ -42,7 +42,7 @@ The probability mass shared between the negative and positive
   covariate, i.e., the number of detected genes in the RNA library. If a
   regression mixture model is given, this method calculates for each of the
   two components the weighted mean number of detected genes and uses these
-  numbers to calculate the expected number of HTO counts for the negative
+  numbers to calculate the expectation value for the negative
   and positive component respectively.
 }
 \examples{
