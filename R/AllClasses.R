@@ -37,6 +37,8 @@
 #'   the same row and column names as the original matrix \code{hto} passed to
 #'   \code{\link{demuxmix}}. The mixture models in slot \code{models} are
 #'   stored in an internal class format.
+#'   
+#' @return An object of class \code{Demuxmix}.
 #' 
 #' @seealso \code{\link{dmmClassify}} to obtain classification results.
 #'   \code{\link{plotDmmHistogram}}, \code{\link{plotDmmScatter}},
