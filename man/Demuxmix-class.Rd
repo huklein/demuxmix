@@ -29,6 +29,9 @@ a hashtag.}
 
 \item{...}{Additional arguments forwarded to summary (ignored).}
 }
+\value{
+An object of class \code{Demuxmix}.
+}
 \description{
 Objects of this class store mixture models fitted to HTO data to demultiplex
 oligonucleotide-labeled cells. One mixture model is stored for each hashtag
