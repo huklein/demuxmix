@@ -50,8 +50,8 @@
 #' 
 #' dmm <- demuxmix(simdata$hto, rna=simdata$rna, p.acpt=0.9)
 #' p.acpt(dmm)
+#' dmm
 #' head(dmmClassify(dmm))
-#' dmm@parameters
 #' 
 #' @aliases show,Demuxmix-method summary,Demuxmix-method
 #'   p.acpt p.acpt,Demuxmix-method p.acpt<- p.acpt<-,Demuxmix,numeric-method 

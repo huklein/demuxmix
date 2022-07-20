@@ -46,16 +46,16 @@ All matrices stored by \code{Demuxmix} have the same dimension and
 }
 \section{Functions}{
 \itemize{
-\item \code{show,Demuxmix-method}: Displays the object on the command line.
+\item \code{show(Demuxmix)}: Displays the object on the command line.
 
-\item \code{p.acpt,Demuxmix-method}: Returns the acceptance probability \code{p.acpt}.
+\item \code{p.acpt(Demuxmix)}: Returns the acceptance probability \code{p.acpt}.
 
-\item \code{p.acpt<-,Demuxmix,numeric-method}: Sets a new acceptance probability \code{p.acpt}.
+\item \code{p.acpt(object = Demuxmix) <- value}: Sets a new acceptance probability \code{p.acpt}.
 
-\item \code{summary,Demuxmix-method}: Summarizes the classification results and
+\item \code{summary(Demuxmix)}: Summarizes the classification results and
 estimates error rates.
-}}
 
+}}
 \section{Slots}{
 
 \describe{
@@ -92,8 +92,8 @@ simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
 
 dmm <- demuxmix(simdata$hto, rna=simdata$rna, p.acpt=0.9)
 p.acpt(dmm)
+dmm
 head(dmmClassify(dmm))
-dmm@parameters
 
 }
 \seealso{

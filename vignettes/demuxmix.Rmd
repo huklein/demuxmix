@@ -18,10 +18,7 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
 # Introduction
@@ -137,9 +134,9 @@ library(cowplot)
 
 set.seed(563425)
 class <- rbind(
-  c(rep( TRUE, 200), rep(FALSE, 200), rep(FALSE, 200), rep( TRUE, 50)),
-  c(rep(FALSE, 200), rep( TRUE, 200), rep(FALSE, 200), rep( TRUE, 50)),
-  c(rep(FALSE, 200), rep(FALSE, 200), rep( TRUE, 200), rep(FALSE, 50)))
+    c(rep( TRUE, 200), rep(FALSE, 200), rep(FALSE, 200), rep( TRUE, 50)),
+    c(rep(FALSE, 200), rep( TRUE, 200), rep(FALSE, 200), rep( TRUE, 50)),
+    c(rep(FALSE, 200), rep(FALSE, 200), rep( TRUE, 200), rep(FALSE, 50)))
 simdata <- dmmSimulateHto(class)
 hto <- simdata$hto
 rna <- simdata$rna
@@ -187,11 +184,11 @@ dim(hto)
 hto1 <- data.frame(HEK_A=hto["HEK_A", ], KG1_C=hto["KG1_C", ],
                    HTO=colSums(hto), NumGenes=rna)
 pa <- ggplot(hto1, aes(x=HEK_A)) + geom_histogram(binwidth=10) +
-  coord_cartesian(ylim=c(0, 500))
+    coord_cartesian(ylim=c(0, 500))
 pb <- ggplot(hto1, aes(x=KG1_C)) + geom_histogram(binwidth=10) +
-  coord_cartesian(xlim=c(0, 1000), ylim=c(0, 500))
+    coord_cartesian(xlim=c(0, 1000), ylim=c(0, 500))
 pc <- ggplot(hto1, aes(x=NumGenes, y=HTO)) + geom_point(size=0.1) +
-  coord_cartesian(ylim=c(0, 750))
+    coord_cartesian(ylim=c(0, 750))
 plot_grid(pa, pb, pc, labels=c("A", "B", "C"))
 ```
 
@@ -416,16 +413,16 @@ remove cells which were not classified with high confidence by freemuxlet.
 ```{r csfBenchmark}
 class <- dmmClassify(dmm)
 highConf <- csf$freemuxlet %in% c("0,0", "1,1") &
-  exp(csf$freemuxlet.prob) >= 0.99
+    exp(csf$freemuxlet.prob) >= 0.99
 table(class$HTO[highConf], csf$freemuxlet[highConf])
 
 # Sensitivity "P(class=PBMC | PBMC)"
 sum(csf$freemuxlet[highConf] == "0,0" & class$HTO[highConf] == "HTO") /
-  sum(csf$freemuxlet[highConf] == "0,0" & class$HTO[highConf] != "uncertain")
+    sum(csf$freemuxlet[highConf] == "0,0" & class$HTO[highConf] != "uncertain")
 
 # Specificity "P(class=CSF | CSF)"
 sum(csf$freemuxlet[highConf] == "1,1" & class$HTO[highConf] == "negative") /
-  sum(csf$freemuxlet[highConf] == "1,1" & class$HTO[highConf] != "uncertain")
+    sum(csf$freemuxlet[highConf] == "1,1" & class$HTO[highConf] != "uncertain")
 ```
 
 With the default acceptance probability of 0.9, *demuxmix* achieved a
@@ -443,11 +440,11 @@ table(class$HTO[highConf], csf$freemuxlet[highConf])
 
 # Sensitivity "P(class=PBMC | PBMC)"
 sum(csf$freemuxlet[highConf] == "0,0" & class$HTO[highConf] == "HTO") /
-  sum(csf$freemuxlet[highConf] == "0,0" & class$HTO[highConf] != "uncertain")
+    sum(csf$freemuxlet[highConf] == "0,0" & class$HTO[highConf] != "uncertain")
 
 # Specificity "P(class=CSF | CSF)"
 sum(csf$freemuxlet[highConf] == "1,1" & class$HTO[highConf] == "negative") /
-  sum(csf$freemuxlet[highConf] == "1,1" & class$HTO[highConf] != "uncertain")
+    sum(csf$freemuxlet[highConf] == "1,1" & class$HTO[highConf] != "uncertain")
 ```
 
 Compared to the regression mixture model, the naive model achieved a slightly
