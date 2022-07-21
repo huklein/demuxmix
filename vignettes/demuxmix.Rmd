@@ -402,7 +402,7 @@ reads. Still, the overlap with the positive component (mean of
 `r round(demuxmix:::getMu2(dmm@models[["HTO"]], standardize=TRUE), digits=1)`
 reads) is reasonably small and the larger mean of the negative component is
 probably driven partly by the large sequencing depth of the HTO library. The
-scatter plots shows that a smaller set of cells has a lower RNA content (y axis)
+scatter plot shows that a smaller set of cells has a lower RNA content (y axis)
 and that those cells require less HTO counts (x axis) in order to be classified
 as positive (red color).
 
