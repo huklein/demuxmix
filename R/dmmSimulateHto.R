@@ -5,7 +5,7 @@
   stopifnot(!any(is.na(class)))
   nHtos <- nrow(class)
   if (is.null(rownames(class))) {
-    rownames(class) <- paste("HTO", 1:nHtos, sep="_")
+    rownames(class) <- paste("HTO", seq_len(nHtos), sep="_")
   } else {
     stopifnot(!any(duplicated(rownames(class))))
   }
@@ -20,7 +20,7 @@
   rna <- rnbinom(n=ncol(class), mu=muRna, size=thetaRna)
   counts <- matrix(NA, nrow=nrow(class), ncol=ncol(class))
   rownames(counts) <- rownames(class)
-  for (i in 1:nrow(counts)) {
+  for (i in seq_len(nrow(counts))) {
     muH <- round(rna * mu[i] / muRna)
     muAmbH <- round(rna * muAmbient[i] / muRna)
     counts[i, class[i, ]] <- rnbinom(n=sum(class[i, ]), mu=muH[class[i, ]], size=theta[i])

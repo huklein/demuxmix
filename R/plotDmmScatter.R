@@ -66,14 +66,14 @@
     stop("Decision boundary outside plotting range.") # Should never happen.
   }
   
-  granularity=10 # number of points within HTO range per iteration
+  granularity <- 10 # number of points within HTO range per iteration
   converged <- FALSE
   iter <- 1
   htoBoundary <- rep(NA, npoints)
   
   while (!converged) {
     
-    for (j in 1:npoints) {
+    for (j in seq_len(npoints)) {
       # Calculate posterior prob - 0.5 for each point in the grid
       htos <- round(seq(htoRange[j, 1], htoRange[j, 2], length.out=granularity))
       comp1 <- pi[1] * dnbinom(htos, mu=mu1[j], size=theta1)

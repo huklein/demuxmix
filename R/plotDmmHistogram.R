@@ -28,7 +28,7 @@
   xmax <- max(qnbinom(quantile, mu=mu1, size=theta1), qnbinom(quantile, mu=mu2, size=theta2))
   df <- data.frame(hto=hto)
   
-  p = ggplot(df, aes(x=hto)) +
+  p <- ggplot(df, aes(x=hto)) +
     geom_histogram(aes(y=stat(density)), alpha=0.4, binwidth=binwidth) +
     stat_function(fun=mixture, lwd=1, n=xmax, col="black") +
     stat_function(fun=comp1, lwd=1, n=xmax, col="dodgerblue") +

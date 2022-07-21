@@ -90,7 +90,7 @@ dmmFitNaive <- function(hto, clusterInit, tol=10^-5, maxIter=100, htoId="HTO") {
   }
   
   if (!iter < maxIter) {
-    warning(paste("Maximum number of iterations reached before convergence (", htoId, ").", sep=""))
+    warning("Maximum number of iterations reached before convergence (", htoId, ").", sep="")
   }
   rownames(logData) <- NULL
   
@@ -174,7 +174,7 @@ dmmFitReg <- function(hto, rna, clusterInit, regRnaNegComp=TRUE, tol=10^-5, maxI
   }
   
   if (!iter < maxIter) {
-    warning(paste("Maximum number of iterations reached before convergence (", htoId, ").", sep=""))
+    warning("Maximum number of iterations reached before convergence (", htoId, ").", sep="")
   }
   rownames(logData) <- NULL
 
@@ -290,7 +290,7 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
   colnames(tailException) <- colnames(hto)
   mixModels <- list()
   modelSelection <- data.frame()
-  for (i in 1:n) {
+  for (i in seq_len(n)) {
     if (model[i] == "naive") {
       prepData <- dmmPreprocess(hto[i, ], k.hto=k.hto[i])
       mixModels[[i]] <- dmmFitNaive(hto=prepData$hto[!prepData$outlier],

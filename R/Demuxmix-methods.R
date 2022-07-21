@@ -8,7 +8,7 @@ setMethod("show", signature=c(object="Demuxmix"),
     } else {
       cat(paste("Demuxmix object with", length(htos), "HTOs and", numCells, "cells.\n"))
     }
-    for (i in 1:length(htos)) {
+    for (i in seq_along(htos)) {
       type <- class(object@models[[i]])
       if (type == "RegMixModel" && !object@models[[i]]@parameters$regRnaNegComp) {
           type <- "RegMixModel (no regression for negative comp.)"
