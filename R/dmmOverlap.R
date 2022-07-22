@@ -24,7 +24,7 @@
 #' @importFrom methods setMethod
 setMethod("dmmOverlap", signature=c(object="Demuxmix", hto="missing"),
   function (object, hto, tol=0.001) {
-    return(sapply(object@models, .dmmOverlap, tol=tol))
+    return(vapply(object@models, .dmmOverlap, numeric(1), tol=tol))
   }
 )
 
@@ -36,6 +36,6 @@ setMethod("dmmOverlap", signature=c(object="Demuxmix", hto="ANY"),
     if (is.character(hto) & any(!is.element(hto, names(object@models)))) {
       stop("Invalid HTO identifier.")
     }
-    return(sapply(object@models[hto], .dmmOverlap, tol=tol))
+    return(vapply(object@models[hto], .dmmOverlap, numeric(1), tol=tol))
   }
 )

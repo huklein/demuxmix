@@ -69,8 +69,8 @@ Demuxmix <- setClass("Demuxmix",
           modelSelection="data.frame",
           parameters="list"),
   validity=function(object) {
-    if(!all(sapply(object@models, is, "NaiveMixModel") |
-            sapply(object@models, is, "RegMixModel"))) {
+    if(!all(vapply(object@models, is, logical(1), "NaiveMixModel") |
+            vapply(object@models, is, logical(1), "RegMixModel"))) {
       return("models must contain objects of class NaivMixModel or RegMixModel.")
     }
     if (any(is.na(object@posteriorProb))) {

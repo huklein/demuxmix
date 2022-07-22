@@ -121,7 +121,7 @@
 #' @importFrom methods is
 setMethod("plotDmmScatter", signature=c(object="Demuxmix", hto="missing"),
   function (object, hto, log=TRUE, pointsize=1.2, plotDecBoundary=TRUE, tol=0.01) {
-    ind <- sapply(object@models, is, "RegMixModel")
+    ind <- vapply(object@models, is, logical(1), "RegMixModel")
     if (sum(ind) == 0) {
       stop("The given object does not contain regression mixture models.")
     } else if (any(!ind)) {
@@ -146,7 +146,7 @@ setMethod("plotDmmScatter", signature=c(object="Demuxmix", hto="ANY"),
       stop("Invalid HTO identifier.")
     }
     models <- object@models[hto]
-    ind <- sapply(models, is, "RegMixModel")
+    ind <- vapply(models, is, logical(1), "RegMixModel")
     if (sum(ind) == 0) {
       stop("The specified models are not regression mixture models.")
     } else if (any(!ind)) {
