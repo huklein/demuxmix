@@ -72,15 +72,21 @@ setMethod("getMu1", signature=c(model="RegMixModel"),
   function(model, standardize=FALSE) {
     if (standardize) { # standardize: return mu for a cell with "average" RNA profile
       if (model@parameters$regRnaNegComp == FALSE) {
-        return(predict(model@fit1, type="response")[1])
+        mu <- predict(model@fit1, type="response")[1]
+        names(mu) <- NULL
+        return(mu)
       } else {
         posteriorProb <- getPosteriorProbability(model)
         rna <- sum(model@fit1$model$rna * posteriorProb[, 1]) / sum(posteriorProb[, 1])
         predData <- data.frame(hto=getHto(model), rna=rna)
-        return(predict(model@fit1, newdata=predData, type="response")[1])
+        mu <- predict(model@fit1, newdata=predData, type="response")[1]
+        names(mu) <- NULL
+        return(mu)
       }
     } else {
-      return(predict(model@fit1, type="response"))
+      mu <- predict(model@fit1, type="response")
+      names(mu) <- NULL
+      return(mu)
     }
   }
 )
@@ -91,9 +97,13 @@ setMethod("getMu2", signature=c(model="RegMixModel"),
       posteriorProb <- getPosteriorProbability(model)
       rna <- sum(model@fit2$model$rna * posteriorProb[, 2]) / sum(posteriorProb[, 2])
       predData <- data.frame(hto=getHto(model), rna=rna)
-      return(predict(model@fit2, newdata=predData, type="response")[1])
+      mu <- predict(model@fit2, newdata=predData, type="response")[1]
+      names(mu) <- NULL
+      return(mu)
     } else {
-      return(predict(model@fit2, type="response"))
+      mu <- predict(model@fit2, type="response")
+      names(mu) <- NULL
+      return(mu)
     }
   }
 )

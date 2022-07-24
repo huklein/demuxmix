@@ -24,12 +24,18 @@
 #' @importFrom methods setMethod
 setMethod("dmmOverlap", signature=c(object="Demuxmix", hto="missing"),
   function (object, hto, tol=0.001) {
+    if (tol <= 0 | tol >= 1) {
+      stop("Parameter tol must be between 0 and 1.")
+    }
     return(vapply(object@models, .dmmOverlap, numeric(1), tol=tol))
   }
 )
 
 setMethod("dmmOverlap", signature=c(object="Demuxmix", hto="ANY"),
   function (object, hto, tol=0.001) {
+    if (tol <= 0 | tol >= 1) {
+      stop("Parameter tol must be between 0 and 1.")
+    }
     if (is.numeric(hto) & any(hto > length(object@models))) {
       stop("Invalid HTO identifier.")
     }

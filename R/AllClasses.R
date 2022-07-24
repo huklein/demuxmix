@@ -79,6 +79,13 @@ Demuxmix <- setClass("Demuxmix",
     if (any(object@posteriorProb < 0) | any(object@posteriorProb > 1)) {
       return("All values in posteriorProb must be in [0, 1].")
     }
+    if (is.null(rownames(object@posteriorProb))) {
+      return("Rownames of posteriorProb must not be NULL.")
+    }
+    if (!all(vapply(object@models, slot, "character(1)", "htoId") ==
+             rownames(object@posteriorProb))) {
+      return("Rownames of posteriorProb must match the htoIds of the models.")
+    }
     if (!is.element("p.acpt", names(object@parameters))) {
       return("p.acpt must be element in parameters.")
     }
