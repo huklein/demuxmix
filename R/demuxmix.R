@@ -248,6 +248,13 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
   if (any(hto < 0) | any(is.na(hto))) {
     stop("Matrix hto must not contain negative or missing values.")
   }
+  if (any(rowSums(hto) == 0)) {
+    stop("Rows in matrix hto must not have all entries equal to 0.")
+  }
+  if (any(rowSums(hto) < 1000)) {
+    warning("At least one HTO has very few reads (<1000). Please inspect the ",
+            "matrix hto and the model fit carefully.")
+  }
   if (!all(is.element(model, c("auto", "naive", "reg", "regpos")))) {
     stop("Parameter model must be either \"auto\", \"naive\", \"reg\" or \"regpos\".")
   }
@@ -329,11 +336,11 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
                          regRnaNegComp=TRUE,
                          tol=tol[i], maxIter=maxIter[i],
                          htoId=rownames(hto)[i])
-      # assess models based on overlap of components
+      ## assess models based on overlap of components (not used by demuxmix)
       ov.mmNaive <- .dmmOverlap(mmNaive)
       ov.mmRegpos <- .dmmOverlap(mmRegpos)
       ov.mmReg <- .dmmOverlap(mmReg)
-      # assess models based on posterior probabilities
+      # assess models based on posterior probabilities (used by demuxmix)
       indN <- !prepDataR$outlier[!prepDataN$outlier]
       indR <- !prepDataN$outlier[!prepDataR$outlier]
       stopifnot(sum(indN) == sum(indR)) # cells used by both models
