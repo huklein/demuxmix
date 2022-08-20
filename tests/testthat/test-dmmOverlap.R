@@ -19,7 +19,7 @@ test_that("dmmOverlap calculates shared probablity mass accurately", {
                                        dimnames=list("myHTO", NULL)),
                   tailException=matrix(NA),
                   modelSelection=data.frame(),
-                  parameters=list(p.acpt=0.9))
+                  parameters=list(pAcpt=0.9))
   
   # dnbinom(10000, mu=150, size=20) # -> 0
   # sum(pmin(dnbinom(0:10000, mu=100, size=20), dnbinom(0:10000, mu=150, size=5)))
