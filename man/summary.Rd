@@ -45,7 +45,7 @@ simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
 
 dmm <- demuxmix(simdata$hto, rna=simdata$rna)
 summary(dmm)
-p.acpt(dmm) <- 0.05
+pAcpt(dmm) <- 0.05
 summary(dmm)
 
 }

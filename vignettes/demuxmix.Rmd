@@ -279,23 +279,23 @@ table(simdata$groundTruth, classLabelsNaive$HTO)
 summary(dmmNaive)
 ```
 
-Another useful parameter is the acceptance probability *p.acpt*, which can be
+Another useful parameter is the acceptance probability *pAcpt*, which can be
 passed to the *demuxmix* method to overwrite the default value, or
 directly set on the object *dmm* as shown in the code block below. The parameter
 is used at the classification step and specifies the minimum posterior
 probability required to classify a droplet. If the posterior probability of the
-most likely class is smaller than *p.acpt*, the cell is classified as
-"uncertain". Setting *p.acpt* to 0 forces the classification of all droplets.
+most likely class is smaller than *pAcpt*, the cell is classified as
+"uncertain". Setting *pAcpt* to 0 forces the classification of all droplets.
 For HTO datasets of moderate quality, the default value can be lowered to
 preserve more cells in the dataset. The *summary* method gives an estimation of
-the FDR depending on the current setting of *p.acpt*.
+the FDR depending on the current setting of *pAcpt*.
 
 ```{r reclassify}
-p.acpt(dmm)
-p.acpt(dmm) <- 0.95
+pAcpt(dmm)
+pAcpt(dmm) <- 0.95
 summary(dmm)
 
-p.acpt(dmm) <- 0
+pAcpt(dmm) <- 0
 summary(dmm)
 
 table(dmmClassify(dmm)$HTO)

@@ -34,7 +34,7 @@ The histogram visualizes how well the positive droplets can be
   droplets with a posterior probability very close to 0 and many droplets
   close to 1, but no or very few droplets with probabilities somewhere in
   between. The histogram can be useful for guiding the selection of the
-  acceptance probability \code{p.acpt}.
+  acceptance probability \code{pAcpt}.
 }
 \examples{
 set.seed(2642)

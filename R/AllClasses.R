@@ -50,13 +50,13 @@
 #' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
 #'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
 #' 
-#' dmm <- demuxmix(simdata$hto, rna=simdata$rna, p.acpt=0.9)
-#' p.acpt(dmm)
+#' dmm <- demuxmix(simdata$hto, rna=simdata$rna, pAcpt=0.9)
+#' pAcpt(dmm)
 #' dmm
 #' head(dmmClassify(dmm))
 #' 
 #' @aliases show,Demuxmix-method summary,Demuxmix-method
-#'   p.acpt p.acpt,Demuxmix-method p.acpt<- p.acpt<-,Demuxmix,numeric-method 
+#'   pAcpt pAcpt,Demuxmix-method pAcpt<- pAcpt<-,Demuxmix,numeric-method 
 #' 
 #' @importFrom methods setClass new is
 #' @exportClass Demuxmix
@@ -86,11 +86,11 @@ Demuxmix <- setClass("Demuxmix",
              rownames(object@posteriorProb))) {
       return("Rownames of posteriorProb must match the htoIds of the models.")
     }
-    if (!is.element("p.acpt", names(object@parameters))) {
-      return("p.acpt must be element in parameters.")
+    if (!is.element("pAcpt", names(object@parameters))) {
+      return("pAcpt must be element in parameters.")
     }
-    if (object@parameters$p.acpt < 0 | object@parameters$p.acpt > 1) {
-      return("p.acpt given in parameters must be in [0, 1].")
+    if (object@parameters$pAcpt < 0 | object@parameters$pAcpt > 1) {
+      return("pAcpt given in parameters must be in [0, 1].")
     }
     return(TRUE)
   }

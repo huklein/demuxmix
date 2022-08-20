@@ -11,7 +11,7 @@
 demuxmix(
   hto,
   rna,
-  p.acpt = 0.9^nrow(hto),
+  pAcpt = 0.9^nrow(hto),
   model = "auto",
   alpha = 0.9,
   beta = 0.9,
@@ -30,10 +30,10 @@ and each column to a droplet. The matrix must have unique row names.}
 the RNA library for each droplet. Same length as columns in \code{hto}.
 If missing, parameter \code{model} must be set to "naive".}
 
-\item{p.acpt}{Acceptance probability that must be reached in order to
+\item{pAcpt}{Acceptance probability that must be reached in order to
 assign a droplet to a hashtag. Droplets with lower probabilities are
 classified as "uncertain". This parameter can be changed after running
-demuxmix by applying \code{\link{p.acpt<-}} to the returned object.}
+demuxmix by applying \code{\link{pAcpt<-}} to the returned object.}
 
 \item{model}{A character specifying the type of mixture model to be used.
 Either "naive", "regpos", "reg" or "auto". The last three options
@@ -108,7 +108,7 @@ The single cell dataset should undergo basic filtering to
   by the respective parameters. The default settings work well for a wide
   range of datasets and usually do not need to be adapted unless any issues
   arise during model fitting and quality control. An exception is the
-  acceptance probability \code{p.acpt}, which may be set to smaller or
+  acceptance probability \code{pAcpt}, which may be set to smaller or
   larger value depending on the desired trade-off between number of
   unclassified/discarded droplets and expected error rate. Steps 1 and 2
   are executed for each HTO separately; step 3 classifies the droplets based
@@ -162,19 +162,19 @@ The single cell dataset should undergo basic filtering to
     problems at the tails will still be logged in the slot
     \code{tailException} of the returned object.
     
-    \item Classification (\code{p.acpt}). The posterior probabilities
+    \item Classification (\code{pAcpt}). The posterior probabilities
     obtained from the models fitted to each HTO separately are 
     used to calculate the most likely class for each cell. The following
     classes are considered: one class for each HTO (singlets), one
     class for each possible multiplet, and a negative class representing
     droplets negative for all HTOs (i.e. empty droplets or droplets
     containing only cell debris). Each droplet is assigned to the most
-    likely class unless the probability is smaller than \code{p.acpt},
+    likely class unless the probability is smaller than \code{pAcpt},
     in which case the droplet is assigned to the class "uncertain".
     Classification results can be accessed by running
     \code{\link{dmmClassify}} on an object returned by \code{demuxmix}. The
     acceptance probability can be changed after running \code{demuxmix} using
-    \code{\link{p.acpt<-}}.
+    \code{\link{pAcpt<-}}.
   }
 }
 \examples{
@@ -191,7 +191,7 @@ dmm
 table(dmmClassify(dmmreg)$HTO, simdata$groundTruth)
 summary(dmmreg)
 
-p.acpt(dmmreg) <- 0.5
+pAcpt(dmmreg) <- 0.5
 summary(dmmreg)
 
 dmmOverlap(dmmreg)

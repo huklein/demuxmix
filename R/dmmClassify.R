@@ -1,5 +1,5 @@
 .dmmClassify <- function(object) {
-  p <- p.acpt(object)
+  p <- pAcpt(object)
   posteriorProb <- object@posteriorProb
   posHashtags <- posteriorProb >= 0.5
   posteriorProb[!posHashtags] <- 1 - posteriorProb[!posHashtags]

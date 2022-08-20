@@ -44,25 +44,25 @@ setMethod("show", signature=c(object="Demuxmix"),
 )
 
 
-#' @describeIn Demuxmix-class Returns the acceptance probability \code{p.acpt}.
-setMethod("p.acpt", signature=c(object="Demuxmix"),
+#' @describeIn Demuxmix-class Returns the acceptance probability \code{pAcpt}.
+setMethod("pAcpt", signature=c(object="Demuxmix"),
   function(object) {
-    return(object@parameters$p.acpt)
+    return(object@parameters$pAcpt)
   }
 )
 
 
-#' @describeIn Demuxmix-class Sets a new acceptance probability \code{p.acpt}.
-setMethod("p.acpt<-", signature=c(object="Demuxmix", value="numeric"),
+#' @describeIn Demuxmix-class Sets a new acceptance probability \code{pAcpt}.
+setMethod("pAcpt<-", signature=c(object="Demuxmix", value="numeric"),
   function(object, value) {
     if (length(value) > 1) {
       value <- value[1]
       warning("Only first element will be used.")
     }
     if (value < 0 | value > 1) {
-      stop("New acceptance probability (p.acpt) must be in [0, 1].")
+      stop("New acceptance probability (pAcpt) must be in [0, 1].")
     }
-    object@parameters$p.acpt <- value
+    object@parameters$pAcpt <- value
     return(object)
   }
 )

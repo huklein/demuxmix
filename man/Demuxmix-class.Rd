@@ -6,17 +6,17 @@
 \alias{Demuxmix}
 \alias{show,Demuxmix-method}
 \alias{summary,Demuxmix-method}
-\alias{p.acpt}
-\alias{p.acpt,Demuxmix-method}
-\alias{p.acpt<-}
-\alias{p.acpt<-,Demuxmix,numeric-method}
+\alias{pAcpt}
+\alias{pAcpt,Demuxmix-method}
+\alias{pAcpt<-}
+\alias{pAcpt<-,Demuxmix,numeric-method}
 \title{A class representing a set of mixture models fitted to HTO data}
 \usage{
 \S4method{show}{Demuxmix}(object)
 
-\S4method{p.acpt}{Demuxmix}(object)
+\S4method{pAcpt}{Demuxmix}(object)
 
-\S4method{p.acpt}{Demuxmix,numeric}(object) <- value
+\S4method{pAcpt}{Demuxmix,numeric}(object) <- value
 
 \S4method{summary}{Demuxmix}(object, ...)
 }
@@ -51,9 +51,9 @@ All matrices stored by \code{Demuxmix} have the same dimension and
 \itemize{
 \item \code{show(Demuxmix)}: Displays the object on the command line.
 
-\item \code{p.acpt(Demuxmix)}: Returns the acceptance probability \code{p.acpt}.
+\item \code{pAcpt(Demuxmix)}: Returns the acceptance probability \code{pAcpt}.
 
-\item \code{p.acpt(object = Demuxmix) <- value}: Sets a new acceptance probability \code{p.acpt}.
+\item \code{pAcpt(object = Demuxmix) <- value}: Sets a new acceptance probability \code{pAcpt}.
 
 \item \code{summary(Demuxmix)}: Summarizes the classification results and
 estimates error rates.
@@ -93,8 +93,8 @@ set.seed(2642)
 simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
                                       c(rep(FALSE, 200), rep(TRUE, 220))))
 
-dmm <- demuxmix(simdata$hto, rna=simdata$rna, p.acpt=0.9)
-p.acpt(dmm)
+dmm <- demuxmix(simdata$hto, rna=simdata$rna, pAcpt=0.9)
+pAcpt(dmm)
 dmm
 head(dmmClassify(dmm))
 

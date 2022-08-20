@@ -238,7 +238,7 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
 
 
 # Internal method .demuxmix
-.demuxmix <- function(hto, rna, p.acpt=0.9^nrow(hto), model="auto", alpha=0.9, beta=0.9, correctTails=TRUE, tol=10^-5, maxIter=100, k.hto=1.5, k.rna=1.5) {
+.demuxmix <- function(hto, rna, pAcpt=0.9^nrow(hto), model="auto", alpha=0.9, beta=0.9, correctTails=TRUE, tol=10^-5, maxIter=100, k.hto=1.5, k.rna=1.5) {
   
   # Check parameters
   n <- nrow(hto)
@@ -267,11 +267,11 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
   if (any(is.element(model, c("auto", "reg", "regpos"))) && any(rna < 1)) {
     stop("Values in rna must be larger or equal to 1.")
   }
-  if (length(p.acpt) != 1) {
-    stop("Only one value for p.acpt must be given.")
+  if (length(pAcpt) != 1) {
+    stop("Only one value for pAcpt must be given.")
   }
-  if (p.acpt < 0 | p.acpt > 1) {
-    stop("p.acpt must be between 0 and 1.")
+  if (pAcpt < 0 | pAcpt > 1) {
+    stop("pAcpt must be between 0 and 1.")
   }
   model <- rep_len(model, length.out=n)
   alpha <- rep_len(alpha, length.out=n)
@@ -384,7 +384,7 @@ dmmApplyModel <- function(model, hto, rna, alpha=0.9, beta=0.9, correctTails=TRU
   names(mixModels) <- rownames(hto)
   rownames(modelSelection) <- NULL
 
-  parameters <- list(p.acpt=p.acpt, model=model, alpha=alpha, beta=beta, correctTails=correctTails, tol=tol, maxIter=maxIter, k.hto=k.hto, k.rna=k.rna)
+  parameters <- list(pAcpt=pAcpt, model=model, alpha=alpha, beta=beta, correctTails=correctTails, tol=tol, maxIter=maxIter, k.hto=k.hto, k.rna=k.rna)
   
   dmm <- Demuxmix(models=mixModels,
                   outliers=outliers,

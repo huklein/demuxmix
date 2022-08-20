@@ -26,13 +26,13 @@ certainty above a defined threshold, the droplet is labeled as "uncertain".
 }
 \details{
 A droplet is labeled as "uncertain" if the posterior probability of
-  the most likely class is smaller than the threshold \code{p.acpt}, which
+  the most likely class is smaller than the threshold \code{pAcpt}, which
   is stored in the given \code{\link{Demuxmix}} object. The acceptance
-  probability \code{p.acpt} can be inspected and set to a different value
-  by applying the getter/setter method \code{\link{p.acpt}} to the
+  probability \code{pAcpt} can be inspected and set to a different value
+  by applying the getter/setter method \code{\link{pAcpt}} to the
   \code{\link{Demuxmix}} object before calling this method. The method
   \code{\link{summary}} is useful to inspect classification results and to
-  estimate error rates for different values of \code{p.acpt}.
+  estimate error rates for different values of \code{pAcpt}.
 }
 \examples{
 set.seed(2642)
@@ -43,9 +43,9 @@ dmm <- demuxmix(simdata$hto, rna=simdata$rna)
 head(dmmClassify(dmm))
 table(dmmClassify(dmm)$HTO, simdata$groundTruth)
 
-p.acpt(dmm) <- 0.5
+pAcpt(dmm) <- 0.5
 sum(dmmClassify(dmm)$HTO == "uncertain")
-p.acpt(dmm) <- 0.9999
+pAcpt(dmm) <- 0.9999
 sum(dmmClassify(dmm)$HTO == "uncertain")
 
 }
