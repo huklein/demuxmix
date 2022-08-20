@@ -23,32 +23,48 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
 # Introduction
 
-Droplet-based single-cell RNA sequencing (scRNA-seq) facilitates the
-interrogation of the transcriptome in thousands of cells in a single run.
-Pooling cells from different samples or treatments prior to cell
-partitioning and library preparation can lower costs and reduce batch
-effects significantly. The task of assigning each cell of a pooled sample to
-its sample of origin is called demultiplexing. If genetically divers samples
-are pooled, single nucleotide polymorphisms in coding regions can be used for
-demultiplexing. For genetically similar or identical samples, an additional
-experimental step is required to label the cells with a sample-specific barcode
-oligonucleotide before pooling. Several techniques have been developed to
-label cells or nuclei with oligonucleotides based on antibodies
-[@stoeckius; @gaublomme] or lipids [@mcginnis]. These oligonucleotides are 
-termed hashtag oligonucleotides (HTOs) and are sequenced
-together with the RNA molecules of the cells resulting in an (HTOs x droplets)
-count matrix in addition to the (genes x droplets) matrix with RNA read counts.
+Droplet-based single-cell RNA sequencing (scRNA-seq) facilitates measuring the
+transcriptomes of thousands of cells in a single run. Pooling cells from
+different samples or conditions before cell partitioning and library
+preparation can significantly lower costs and reduce batch effects. The task of
+assigning each cell of a pooled sample to its sample of origin is called
+demultiplexing. If genetically diverse samples are pooled, single nucleotide
+polymorphisms in coding regions can be used for demultiplexing. When working
+with genetically similar or identical samples, an additional experimental step
+is required to label the cells with a sample-specific barcode oligonucleotide
+before pooling. Several techniques have been developed to label cells or nuclei
+with oligonucleotides based on antibodies [@stoeckius; @gaublomme] or lipids
+[@mcginnis]. These oligonucleotides are termed hashtag oligonucleotides (HTOs)
+and are sequenced together with the RNA molecules of the cells resulting in an
+(HTOs x droplets) count matrix in addition to the (genes x droplets) matrix
+with RNA read counts.
 
 The *demuxmix* package implements a method to demultiplex droplets based on HTO
-counts using negative binomial mixture models. *demuxmix* can be applied to the
-HTO counts only, but better results are often achieved if the total number
-of genes detected per droplet (not the full transcription profile) is passed
-to the method along with the HTO counts to leverage the positive association
-between genes detected and HTO counts. Further, *demuxmix* provides estimated
-error rates based on its probabilistic mixture model framework, plots for data
-quality assessment, and multiplet identification as outlined in the example
-workflows in this vignette. Technical details of the methods are described in
-the man pages.
+counts using negative binomial regression mixture models. *demuxmix* can be
+applied to the HTO counts only, but better results are often achieved if the
+total number of genes detected per droplet (not the complete transcription
+profile) is passed to the method along with the HTO counts to leverage the
+positive association between genes detected and HTO counts. Further, *demuxmix*
+provides estimated error rates based on its probabilistic mixture model
+framework, plots for data quality assessment, and multiplet identification, as
+outlined in the example workflows in this vignette. Technical details of the
+methods are described in the man pages.
+
+
+# Installation
+
+The *demuxmix* package is available at [Bioconductor](https://bioconductor.org)
+and can be installed via *BiocManager::install*:
+```{r installation.install, eval = FALSE}
+if (!require("BiocManager"))
+    install.packages("BiocManager")
+BiocManager::install("demuxmix")
+```
+The package only needs to be installed once. Load the package into an R
+session with
+```{r installation.loadlib, eval = FALSE}
+library(demuxmix)
+```
 
 
 # Quick start
