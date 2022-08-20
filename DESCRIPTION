@@ -1,13 +1,12 @@
 Package: demuxmix
 Title: Demultiplexing oligo-barcoded scRNA-seq data using regression mixture models
-Version: 0.99.3
-Date: 2022-07-28
+Version: 0.99.4
+Date: 2022-08-20
 Description: A package for demultiplexing single-cell sequencing experiments
-    of pooled cells that were labeled with barcode oligonucleotides. The
-    package implements methods to fit regression mixture models for a
-    probabilistic classification of cells including the detection of
-    multiplets. Demultiplexing error rates can be estimated and methods for
-    quality control are provided.
+    of pooled cells labeled with barcode oligonucleotides. The package
+    implements methods to fit regression mixture models for a probabilistic
+    classification of cells, including multiplet detection. Demultiplexing
+    error rates can be estimated, and methods for quality control are provided.
 Authors@R: person("Hans-Ulrich", "Klein",
     email = "hansulrich.klein@gmail.com",
     role = c("aut", "cre"),
@@ -20,6 +19,7 @@ VignetteBuilder: knitr
 biocViews: SingleCell, Sequencing, Preprocessing, Classification, Regression
 BiocType: Software
 URL: https://github.com/huklein/demuxmix
+BugReports: https://github.com/huklein/demuxmix/issues
 Encoding: UTF-8
 RoxygenNote: 7.2.1
 Config/testthat/edition: 3
