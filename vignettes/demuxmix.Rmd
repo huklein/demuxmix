@@ -1,5 +1,6 @@
 ---
-title: "Demultiplexing barcoded scRNA-seq data with demuxmix"
+title: "Demultiplexing oligonucleotide-labeled scRNA-seq data with demuxmix"
+shorttitle: "Demultiplexing droplets with demuxmix"
 author:
 - name: Hans-Ulrich Klein
   affiliation: Center for Translational and Computational Neuroimmunology,
@@ -9,7 +10,7 @@ output:
   BiocStyle::html_document:
     toc_float: true
   BiocStyle::pdf_document: default
-package: BiocStyle
+package: demuxmix
 bibliography: references.bib
 vignette: >
   %\VignetteIndexEntry{Demultiplexing cells with demuxmix}
@@ -55,13 +56,16 @@ methods are described in the man pages.
 
 The *demuxmix* package is available at [Bioconductor](https://bioconductor.org)
 and can be installed via *BiocManager::install*:
+
 ```{r installation.install, eval = FALSE}
 if (!require("BiocManager"))
     install.packages("BiocManager")
 BiocManager::install("demuxmix")
 ```
+
 The package only needs to be installed once. Load the package into an R
 session with
+
 ```{r installation.loadlib, eval = FALSE}
 library(demuxmix)
 ```
@@ -74,48 +78,51 @@ detected genes per droplet are needed to run *demuxmix* with default settings.
 Empty and low-quality droplets should be removed before running *demuxmix*.
 A gene with at least one read is usually considered as detected.
 Here, we simulate a small example dataset.
-```{r quickstart.simulate}
+
+```{r quickstartSimulate}
 library(demuxmix)
+
 set.seed(2642)
-class <- rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-               c(rep(FALSE, 200), rep(TRUE, 220)))
-simdata <- dmmSimulateHto(class=class, mu=c(150, 300), theta=c(15, 20),
-                          muAmbient=c(30, 30), thetaAmbient=c(10, 10),
-                          muRna=3000, thetaRna=30)
+class <- rbind(
+    c(rep(TRUE,  220), rep(FALSE, 200)),
+    c(rep(FALSE, 200), rep(TRUE,  220))
+)
+simdata <- dmmSimulateHto(class)
 hto <- simdata$hto
 dim(hto)
 rna <- simdata$rna
 length(rna) == ncol(hto)
 ```
+
 The dataset consists of 420 droplets with cells labeled with two different HTOs.
-The first 200 droplets are singlets labeled with the first HTO followed by
+The first 200 droplets are singlets labeled with the first HTO, followed by
 another 200 singlets labeled with the second HTO. The remaining 20 droplets are
 doublets, which are positive for both HTOs. Next, we run *demuxmix* to assign
 droplets to HTOs.
-```{r quickstart.demuxmix}
-dmm <- demuxmix(hto, rna=rna)
+
+```{r quickstartDdemuxmix}
+dmm <- demuxmix(hto, rna = rna)
 summary(dmm)
 classes <- dmmClassify(dmm)
 table(classes$HTO)
 ```
+
 The object *dmm* contains the mixture models used to classify the droplets. The
 data frame returned  by *summary* shows that `r sum(classes$HTO == "HTO_1")`
 droplets were assigned to *HTO_1* and `r sum(classes$HTO == "HTO_2")` to
 *HTO_2*, respectively. Since these results meet our expectations and
 the estimated error rates are reasonably low, we ran *dmmClassify* to obtain
 the classifications for each droplet as a data frame with one row per droplet.
-The first column *HTO* of this data frame contains the classification results
-which are usually used to extract the singlets for downstream analysis.
+The first column *HTO* of this data frame contains the final classification
+results.
 
-As additional quick quality control, a histogram of the HTO values overlayed
-with the components from the mixture model can be plotted. The following
-command plots a panel with one histogram per HTO in the dataset.
-```{r quickstart.histogram}
+A histogram of the HTO values overlayed with the components from the mixture
+model can be plotted for quality control. The following command plots a panel
+with one histogram per HTO in the dataset.
+
+```{r quickstartHistogram, fig.cap = "Density histograms overlayed with mixture probability mass function. The density histograms show the distribution of the HTO counts for the first HTO (upper figure) and the 2nd HTO (lower figure). The negative component of the mixture model representing non-tagged cells is shown in blue, and the positive component is in red."}
 plotDmmHistogram(dmm)
 ```
-In this example, the mixture models for both HTOs fit well. *HTO_2* shows an
-even better separation of positive (tagged) and negative (non-tagged) droplets.
-A large overlap of the blue and red component would be concerning.
 
 
 # Demultiplexing droplets with demuxmix
@@ -123,15 +130,14 @@ A large overlap of the blue and red component would be concerning.
 ## Example datasets
 
 Two example datasets are introduced in this vignette to illustrate a typical
-*demuxmix* workflow. The first dataset is a small simulated dataset that was
-used to generate the plots when building this vignette. The alternative second
-dataset is a real dataset and can be downloaded from the *ExperimentHub* via the
-*scRNAseq* package. Both datasets can be used to go through this vignette by
-running either the first (simulated data) or the second code block (real data)
-below. Since the real dataset is much larger, some commands may take up to one
-minute to complete, which is the reason why the simulated data was used to
-build this vignette.
-
+*demuxmix* workflow. The first dataset is a small simulated dataset used to
+generate the plots when building this vignette. The alternative second dataset
+is a real dataset and can be downloaded from the `r Biocpkg("ExperimentHub")`
+via the `r Biocpkg("scRNAseq")` package. Both datasets can be used to go
+through this vignette by running either the first (simulated data) or the
+second code block (real data) below. Since the real dataset is much larger,
+some commands may take up to one minute to complete, which is why this vignette
+was built with the simulated data.
 
 ### Simulated dataset
 
@@ -141,31 +147,48 @@ and HTO (row) whether the droplet is positive or negative for that
 HTO. Thus, the 3 x 650 matrix *class* below describes a dataset with 3
 hashtags and 650 droplets, of which 50 are doublets (with cells tagged
 by *HTO_1* and *HTO_2*). The remaining 600 droplets consist of 3 blocks of 200
-singlets positive for one of the three HTOs each.
+singlets tagged by one of the three HTOs each.
 
-```{r simulate, fig.height=4}
+```{r simulate, fig.height = 6, fig.cap = "Characteristics of the simulated dataset. A) The histogram of the HTO counts from the first HTO (HTO_1) shows a clear separation between positive and negative droplets. B) The histogram of the second HTO (HTO_2) looks similar, although the positive droplets have a smaller mean count and a larger dispersion. C) The histogram of the third HTO reveals a more extensive overlap between the distributions of the positive and negative droplets. D) The scatter plot shows a positive correlation between the number of detected genes and HTO counts in the simulated data."}
 library(demuxmix)
 library(ggplot2)
 library(cowplot)
 
-set.seed(563425)
+set.seed(5636)
 class <- rbind(
     c(rep( TRUE, 200), rep(FALSE, 200), rep(FALSE, 200), rep( TRUE, 50)),
     c(rep(FALSE, 200), rep( TRUE, 200), rep(FALSE, 200), rep( TRUE, 50)),
-    c(rep(FALSE, 200), rep(FALSE, 200), rep( TRUE, 200), rep(FALSE, 50)))
-simdata <- dmmSimulateHto(class)
+    c(rep(FALSE, 200), rep(FALSE, 200), rep( TRUE, 200), rep(FALSE, 50))
+)
+simdata <- dmmSimulateHto(
+    class = class,
+    mu = c(600, 400, 200),
+    theta = c(25, 15, 25),
+    muAmbient = c(30, 30, 60),
+    thetaAmbient = c(20, 10, 5),
+    muRna = 3000,
+    thetaRna = 30
+)
 hto <- simdata$hto
 rna <- simdata$rna
 
-hto1 <- data.frame(HTO_1=hto[1, ], HTO=colSums(hto), NumGenes=rna)
-pa <- ggplot(hto1, aes(x=HTO_1)) + geom_histogram(bins=30)
-pb <- ggplot(hto1, aes(x=NumGenes, y=HTO)) + geom_point()
-plot_grid(pa, pb, labels=c("A", "B"))
+htoDf <- data.frame(t(hto), HTO = colSums(hto), NumGenes = rna)
+pa <- ggplot(htoDf, aes(x = HTO_1)) +
+    geom_histogram(bins = 25)
+pb <- ggplot(htoDf, aes(x = HTO_2)) +
+    geom_histogram(bins = 25)
+pc <- ggplot(htoDf, aes(x = HTO_3)) +
+    geom_histogram(bins = 25)
+pd <- ggplot(htoDf, aes(x = NumGenes, y = HTO)) +
+    geom_point()
+plot_grid(pa, pb, pc, pd, labels = c("A", "B", "C", "D"))
 ```
-*dmmSimulateHto* returns a matrix with the simulated HTO counts as well as a
-vector with a simulated number of detected genes for each droplet. The
-histogram in panel A depicts the distribution of the first hashtag. The
-scatterplot in panel B shows that the method simulates a positive
+
+*dmmSimulateHto* dmmSimulateHto returns a matrix with the simulated HTO counts
+and a vector with the simulated number of detected genes for each droplet.
+Figure \@ref(fig:simulate) shows that we simulated two HTOs of excellent
+quality (HTO_1 and HTO_2) and a third HTO (HTO_3) with more background reads,
+complicating the demultiplexing. Further, the simulated data shows a positive
 association between the number of detected genes and the number of HTO counts
 per droplet, which is often observed in real data.
 
@@ -177,52 +200,61 @@ cell lines. Three samples were taken from each cell line and tagged with a
 different HTO resulting in a total of 12 different HTOs. The downloaded dataset
 still contains many potentially empty droplets, which are removed using
 *emptyDrops*. Subsequently, the numbers of detected genes are calculated and
-the HTO matrix is extracted from the SingleCellExperiment object. More
+the HTO matrix is extracted from the *SingleCellExperiment* object. More
 information about the preprocessing and data structures for single-cell data in
-R/Bioconductor can be found in this excellent
+Bioconductor can be found in this excellent
 [online book](http://bioconductor.org/books/release/OSCA/index.html).
 
-```{r stoeckius, eval=FALSE}
+```{r stoeckius, eval = FALSE}
 library(demuxmix)
 library(ggplot2)
 library(cowplot)
 library(scRNAseq)
 library(DropletUtils)
 
-htoExp <- StoeckiusHashingData(type="mixed")
+set.seed(8514)
+htoExp <- StoeckiusHashingData(type = "mixed")
 eDrops <- emptyDrops(counts(htoExp))
 htoExp <- htoExp[, which(eDrops$FDR <= 0.001)]
-
-rna <- apply(assay(htoExp) > 0, 2, sum)
-hto <- assay(altExp(htoExp))
+rna <- colSums(counts(htoExp))
+hto <- counts(altExp(htoExp))
 dim(hto)
 
-hto1 <- data.frame(HEK_A=hto["HEK_A", ], KG1_C=hto["KG1_C", ],
-                   HTO=colSums(hto), NumGenes=rna)
-pa <- ggplot(hto1, aes(x=HEK_A)) + geom_histogram(binwidth=10) +
-    coord_cartesian(ylim=c(0, 500))
-pb <- ggplot(hto1, aes(x=KG1_C)) + geom_histogram(binwidth=10) +
-    coord_cartesian(xlim=c(0, 1000), ylim=c(0, 500))
-pc <- ggplot(hto1, aes(x=NumGenes, y=HTO)) + geom_point(size=0.1) +
-    coord_cartesian(ylim=c(0, 750))
-plot_grid(pa, pb, pc, labels=c("A", "B", "C"))
+htoDf <- data.frame(t(hto[c("HEK_A", "KG1_B", "KG1_C"), ]),
+    HTO = colSums(hto), NumGenes = rna
+)
+pa <- ggplot(htoDf, aes(x = HEK_A)) +
+    geom_histogram(binwidth = 10) +
+    coord_cartesian(xlim = c(0, 600), ylim = c(0, 500))
+pb <- ggplot(htoDf, aes(x = KG1_B)) +
+    geom_histogram(binwidth = 10) +
+    coord_cartesian(xlim = c(0, 600), ylim = c(0, 500))
+pc <- ggplot(htoDf, aes(x = KG1_C)) +
+    geom_histogram(binwidth = 10) +
+    coord_cartesian(xlim = c(0, 600), ylim = c(0, 500))
+pd <- ggplot(htoDf, aes(x = NumGenes, y = HTO)) +
+    geom_point(size = 0.1) +
+    coord_cartesian(ylim = c(0, 750))
+plot_grid(pa, pb, pc, pd, labels = c("A", "B", "C", "D"))
 ```
 
 The plots generated by the code above reveal that the quality of the different
-HTOs vary in the cell line mixture dataset. Most HTOs, like *HEK_A*, show a
-nicely separated bimodal distribution, but others, like *HG1_C*, demonstrate a
-larger overlap of the distributions for the positive and negative droplets.
-As with the simulated data, there is a positive association between HTO counts
-and detected number of genes. The association appears to be noisier, however.
-The reason therefore is that four different cell lines with distinct RNA
-profiles and different cell characteristics likely influencing antibody binding
-were pooled. Consequently, the HTO counts and the number of detected genes
-are very different between cells from different samples, but very similar
-between cells from the same sample. This rather uncommon pooling design makes it
-difficult to leverage the association between number of genes detected
-and HTO counts to improve demultiplexing. With default parameters, *demuxmix*
-automatically selects the most appropriate model, and, for this dataset, naive
-instead of regression mixture models are used for most HTOs.
+HTOs varies in the cell line mixture dataset. Most HTOs demonstrate a nicely
+separated bimodal distribution, as exemplarily shown for *HEK_A*, but *HG1_C*
+and, to a lesser extent, *HG1_B*, demonstrate a larger overlap between the
+distributions of the positive and negative droplets. As with the simulated
+data, there is a positive association between HTO counts and the detected
+number of genes. However, the association appears noisier because four
+different cell lines with highly distinct RNA profiles and different cell
+surface characteristics (likely influencing HTO labeling) were pooled.
+Consequently, the HTO counts and the number of detected genes are very
+different between cells from different samples but very similar between cells
+from the same sample. This uncommon experimental design makes it difficult to
+leverage the association between the number of genes detected and HTO counts
+during demultiplexing. With default parameters, *demuxmix* automatically selects
+the most appropriate model, and, for this dataset, naive instead of regression
+mixture models are used for most HTOs. In addition, the large number of 12
+pooled samples further complicates the demultiplexing.
 
 
 ## Running demuxmix
@@ -230,16 +262,15 @@ instead of regression mixture models are used for most HTOs.
 *demuxmix* takes a matrix of HTO counts and a vector with the numbers of
 detected genes per droplet as input and returns an object of class *Demuxmix*
 containing a mixture model for each HTO. Several additional parameters can be
-passed to *demuxmix*, but all these parameters have default values which work
-well across a large range of datasets. With the default settings,
-*demuxmix* selects either naive mixture models or regression mixture models for
-each HTO depending on which model provides the best separation between positive
-and negative droplets.
+passed to *demuxmix*, but all these parameters have default values that work
+well across many datasets. With the default settings, *demuxmix* automatically
+selects either naive mixture models or regression mixture models for each HTO,
+depending on which model provides the best separation between positive and
+negative droplets.
 
 ```{r demuxmix}
-dmm <- demuxmix(hto, rna=rna)
+dmm <- demuxmix(hto, rna = rna)
 dmm
-
 classLabels <- dmmClassify(dmm)
 head(classLabels)
 
@@ -264,31 +295,30 @@ droplets were classified correctly.
 The parameter *model* can be used to select a specific mixture model. The naive
 mixture model selected in the code below does not use any information from the
 RNA data. As shown in the following output, the naive mixture model performs
-slightly worse compared to the regression mixture model mainly because more
+slightly worse than the regression mixture model mainly because more
 droplets are assigned to the class "uncertain".
 
 ```{r demuxmixNaive}
-dmmNaive <- demuxmix(hto, model="naive")
+dmmNaive <- demuxmix(hto, model = "naive")
 dmmNaive
-
 classLabelsNaive <- dmmClassify(dmmNaive)
-table(classLabelsNaive$HTO, classLabels$HTO)
-
-table(simdata$groundTruth, classLabelsNaive$HTO)
-
 summary(dmmNaive)
+
+# Compare results of the naive model to ground truth from simulation
+table(classLabelsNaive$HTO, simdata$groundTruth)
 ```
 
 Another useful parameter is the acceptance probability *pAcpt*, which can be
 passed to the *demuxmix* method to overwrite the default value, or
-directly set on the object *dmm* as shown in the code block below. The parameter
+directly set in the object *dmm* as shown in the code block below. The parameter
 is used at the classification step and specifies the minimum posterior
 probability required to classify a droplet. If the posterior probability of the
-most likely class is smaller than *pAcpt*, the cell is classified as
+most likely class is smaller than *pAcpt*, the droplet is classified as
 "uncertain". Setting *pAcpt* to 0 forces the classification of all droplets.
 For HTO datasets of moderate quality, the default value can be lowered to
-preserve more cells in the dataset. The *summary* method gives an estimation of
-the FDR depending on the current setting of *pAcpt*.
+recover more droplet in the dataset, if a larger error rate is acceptable.
+The *summary* method estimates the FDR depending on the current setting
+of *pAcpt*.
 
 ```{r reclassify}
 pAcpt(dmm)
@@ -297,8 +327,6 @@ summary(dmm)
 
 pAcpt(dmm) <- 0
 summary(dmm)
-
-table(dmmClassify(dmm)$HTO)
 ```
 
 
@@ -307,63 +335,128 @@ table(dmmClassify(dmm)$HTO)
 The *demuxmix* package implements methods for assessing data quality and
 model fit. All plotting methods plot a panel with one graph for each HTO in the
 dataset as default. Specific HTOs can be selected via the parameter *hto*. The
-most informative plot is probably the histogram of the HTO data overlaid
-with the mixture probability mass function:
+most informative plot is probably the histogram of the HTO data overlaid with
+the mixture probability mass function, as this plot shows both the raw data
+and the model fit.
 
-```{r qualityHistogram, fig.height=8}
+```{r qualityHistogram, fig.height = 8, fig.cap = "Density histograms overlayed with mixture probability mass functions. The density histogram is shown for each HTO in the simulated dataset. The negative component of the respective mixture model representing non-tagged cells (blue) and the positive component (red) are plotted on top of the histogram. The black curve is the mixture pmf."}
 plotDmmHistogram(dmm)
 dmmOverlap(dmm)
 ```
 
-In our example dataset, all three HTOs show a good separation between negative
-droplets (blue component) and positive droplets (red component) and all three
-mixture models demonstrate a good model fit. For HTO datasets with a large
-sequencing depth, the x axis can range from 0 up to many thousand reads
-so that the red component appears as a flat line along the x axis. In that
-case, the *ggplot2* method *coord_cartesian* can be used to zoom into the
-interesting area of the plot where the two components intersect
-(see examples in the help page of *plotDmmHistogram*).
+First, the histograms should be used to verify the model fit. The model
+fit is good if the mixture pmf closely follows the shape of the histogram.
+The model fit in the simulated data is adequate for all three HTOs. Second,
+the histogram should be bimodal, and the blue and red components should show
+little overlap, which is the case for the first two HTOs (HTO_1 and HTO_2).
+The third HTO (HTO_3) was simulated to harbor more background reads (mean
+of 60 reads), and, consequently, the blue component is shifted towards the
+right. The method *dmmOverlap* calculates the area intersected by the two
+components. The area is close to zero for the first two HTOs but
+`r round(dmmOverlap(dmm)["HTO_3"], digits = 3)` for HTO_3. As a rule of
+thumb, an overlap less than 0.03 can be considered excellent. As seen in
+this example dataset, a value around 0.05 will lead to some droplets being
+classified as "uncertain" but is still sufficient to accurately
+demultiplex the majority of droplets.
 
-A distinct quality measure related to the histogram is the area intersected by
-the two components of the mixture model, which is calculated by *dmmOverlap*.
-Good HTO experiments usually results in values less than 0.03.
+The histogram plots can look very different across different real datasets
+depending on (i) the HTO sequencing depth, (ii) the number of pooled
+samples, (iii) the number of droplets, and (iv) the quality of the HTO
+experiment (cross-staining, background HTOs, cell debris). Only the last
+factor (iv) relates to the actual quality of the data. Specifically,
+(i) and (ii) can both lead to a histogram that looks like a vertical blue
+line with an x-offset of 0 and a flat horizontal red line with a y-offset
+of 0. The reason is that a large sequencing depth (i) results in large
+HTO counts in positive droplets so that the probability mass of the red
+component spreads over an extensive range of values on the x-axis and
+appears flat compared to the sharp location of the blue background component.
+Similarly, a large number of pooled samples, e.g., the 12 samples in the
+cell line mixture dataset, causes the red component to appear flat as it
+only covers an area of about 1/12 compared to 11/12 covered by the blue
+component. In such cases, it is helpful to zoom into the critical part of
+the histogram where the red and blue components overlap. For the cell line
+mixture dataset, the following command generates a suitable histogram for
+the first HTO (panel B).
+
+```{r qualityZoomHistogram, eval = FALSE}
+pa <- plotDmmHistogram(dmm, hto=1)
+pb <- plotDmmHistogram(dmm, hto=1) +
+    coord_cartesian(xlim = c(0, 200), ylim = c(0, 0.01))
+plot_grid(pa, pb, labels = c("A", "B"))
+```
 
 Another useful quality plot is the histogram of the posterior probability that a
-droplet is positive for the respective hashtag:
+droplet is positive for the respective HTO.
 
-```{r qualityPosteriorP, fig.height=8}
+```{r qualityPosteriorP, fig.height = 8, fig.cap = "Histograms of posterior probabilities. Each histogram shows the distribution of the posterior probabilities that a droplet contains a tagged cell. Posterior probabilities were obtained from the mixture model fitted to the respective HTO data."}
 plotDmmPosteriorP(dmm)
 ```
 
-As in the histogram of the example dataset, most posterior probabilities should
-be either close to 0 (negative droplet) for close to 1 (positive droplet) with
-only very few probabilities in between (uncertain).
+As seen in the first two histograms for HTO_1 and HTO_2, most droplets should
+have a posterior probability close to 0 (negative droplet) or close to 1
+(positive droplet). Consistent with the previous quality plots, the third HTO
+(HTO_3) demonstrates some droplets with posterior probabilities between
+0 and 1, reflecting droplets with cells of uncertain origin.
 
-Finally, if regression mixture models were used, the relation between the
-number of detected genes and the HTO counts can be plotted:
+Finally, if regression mixture models were used, the decision boundary in
+relation to the number of detected genes and the HTO counts can be plotted.
 
-```{r qualityScatterplot, fig.height=8}
+```{r qualityScatterplot, fig.height = 8, fig.cap = "Decision boundary. The scatter plots show the relation between the number of detected genes and HTO counts for each of the three HTOs. The color indicates the posterior probability. The black dashed line depicts the decision boundary where the posterior probability is 0.5."}
 plotDmmScatter(dmm)
 ```
 
-The color of the dots indicates the posterior probability of the droplets being
-positive for the HTO. A droplet with many detected genes is required to have
-more HTO reads in order to be classified as positive. If naive mixture models
-were used, the dashed decision boundaries between blue (negative) and red
-(positive) droplets would be vertical lines.
+These plots are only available if regression mixture models were used. A
+droplet with many detected genes is required to have more HTO reads in order
+to be classified as positive. If naive mixture models were used, the dashed
+decision boundaries between blue (negative) and red (positive) droplets would
+be vertical lines.
+
+## Comparison to hashedDrops
+
+The method *hashedDrops* in the package `r Biocpkg("DropletUtils")` provides
+an alternative approach for demultiplexing HTO-labeled single cell data. The
+following code block runs *hashedDrops* and compares the results to *demuxmix*.
+
+```{r hashedDrops, fig.height = 6, fig.cap = "Comparison between demuxmix and hashedDrops. The heatmap depicts the classification results for the simulated dataset obtained from demuxmix on the x-axis and hashedDrops on the y-axis."}
+suppressPackageStartupMessages(library(DropletUtils))
+suppressPackageStartupMessages(library(reshape2))
+hd <- hashedDrops(hto)
+hdrops <- rownames(hto)[hd$Best]
+hdrops[!hd$Confident] <- "uncertain"
+hdrops[hd$Doublet] <- "multiplet"
+
+dmux <- classLabels$HTO
+dmux[classLabels$Type == "multiplet"] <- "multiplet"
+
+comp <- melt(as.matrix(table(dmux, hdrops)))
+colnames(comp) <- c("demuxmix", "hashedDrops", "Count")
+comp$color <- ifelse(comp$Count > 100, "black", "white")
+ggplot(comp, aes(x = demuxmix, y = hashedDrops, fill = Count)) +
+    geom_tile() +
+    scale_fill_viridis_c() +
+    geom_text(aes(label = Count), col = comp$color, size = 5)
+```
+
+The classifications of both methods are highly concordant. No droplet has been
+assigned to different singlet classes by the two approaches. However,
+*hashedDrops* assigned more droplets tagged by HTO_3 to the category
+"uncertain", which is expected when looking at the lower panel of Figure
+\@ref(fig:qualityScatterplot). In contrast to *demuxmix*, *hashedDrops* does
+not utilize the positive association between the number of genes and HTO counts
+we simulated in this dataset.
 
 
-# Special usecase: pooling unlabeled with labeled cells
+# Special usecase: pooling non-labeled with labeled cells
 
-If precious rare cells are pooled with highly abundant cells, labeling only
-the highly abundant cells but not the rare cells avoids additional losses of
-the rare cells during the labeling process. However, such a design results in a
-more challenging demultiplexing task. The real dataset used as example in this
-section consists of rare cerebrospinal fluid cells (unlabeled) and peripheral
-blood mononuclear cells (PBMCs), which were stained with
-oligonucleotide-conjugated antibodies. In this design, the "negative"
-cells identified by demuxmix correspond to the CSF cells. The dataset is
-included in the *demuxmix* package as data frame.
+If precious rare cells are pooled with highly abundant cells, labeling the
+highly abundant cells only but not the rare cells avoids additional losses of
+the rare cells during the labeling process. However, such a design results in
+a more challenging demultiplexing task. The real dataset used as an example
+in this section consists of rare cerebrospinal fluid cells (non-labeled) and
+peripheral blood mononuclear cells (PBMCs) stained with
+oligonucleotide-conjugated antibodies. In this design, the “negative” cells
+identified by demuxmix correspond to the CSF cells. The dataset is included
+in the *demuxmix* package as a data frame.
 
 ```{r csfLoad}
 data(csf)
@@ -371,22 +464,22 @@ head(csf)
 
 csf <- csf[csf$NumGenes >= 200, ]
 nrow(csf)
-hto <- t(matrix(csf$HTO, dimnames=list(rownames(csf), "HTO")))
+hto <- t(matrix(csf$HTO, dimnames = list(rownames(csf), "HTO")))
 ```
 
-The data frame contains the number of HTO read and the number of detected genes
-per droplet in the first two columns. We remove all droplets with less than 200
-detected genes, since these droplets unlikely contain intact cells. The HTO
-counts are then converted into a matrix as required by *demuxmix*. The matrix
-has only one row since only the PBMCs were stained. For this example dataset,
-CSF cells and PBMCs from two genetically unrelated donors were pooled so that
-genetic demultiplexing can be used to benchmark the HTO-based demultiplexing.
-The third column contains the result from the genetic demultiplexing using
-freemuxlet [@kang]. The fourth column contains freemuxlet's logarithmized
-posterior probability.
+The data frame contains the number of HTO reads and the number of detected
+genes per droplet in the first two columns. We remove all droplets with less
+than 200 detected genes since these droplets are unlikely to contain intact
+cells. The HTO counts are then converted into a matrix as required by
+*demuxmix*. The matrix has only one row since only the PBMCs were stained.
+For this example dataset, CSF cells and PBMCs from two genetically
+unrelated donors were pooled so that genetic demultiplexing could be
+used to benchmark the HTO-based demultiplexing. The third column contains
+the result from the genetic demultiplexing using *freemuxlet* [@kang]. The
+fourth column contains *freemuxlet’s* logarithmized posterior probability.
 
 ```{r csfDemuxmix}
-dmm <- demuxmix(hto, rna=csf$NumGenes)
+dmm <- demuxmix(hto, rna = csf$NumGenes)
 dmm
 
 summary(dmm)
@@ -395,37 +488,38 @@ dmmOverlap(dmm)
 ```
 
 *demuxmix* selected a regression mixture model with a significant
-regression coefficient in the positive component indicating that the number of
-detected genes in the stained PBMCs is predictive for the HTO counts observed
+regression coefficient in the positive component, indicating that the number of
+detected genes in the stained PBMCs is predictive of the HTO counts observed
 in these cells. Although *demuxmix* selected a regression model for the
-negative component as well, the smaller coefficient and the larger p value
+negative component as well, the smaller coefficient and the larger p-value
 suggest that the association is much weaker in the CSF cells. This is common
 since a larger amount of background HTOs is required in order to detect the
 association in the negative droplets.
 
-Next, we look at QC plots:
+Next, we look at some QC plots.
 
-```{r csfPlots, fig.height=7}
+```{r csfPlots, fig.height = 7, fig.cap = "Demultiplexing a pool of labeled PBMCs and non-labeled CSF cells. A) The density histogram overlaid with the mixture pmf shows a good separation between the positive red component (PMBCs) and the negative blue component (CSF cells). B) The scatter plot shows the number of HTO reads (x-axis) versus the number of detected genes (y-axis) on the logarithmic scale. The color indicates the posterior probability of the droplet containing a tagged cell."}
 histo <- plotDmmHistogram(dmm)
-scatter <- plotDmmScatter(dmm) + coord_cartesian(xlim=c(2, 4))
-plot_grid(histo, scatter, labels=c("A", "B"), nrow=2)
+scatter <- plotDmmScatter(dmm) + coord_cartesian(xlim = c(2, 4))
+plot_grid(histo, scatter, labels = c("A", "B"), nrow = 2)
 ```
 
-The histogram reveals a good model fit but also shows some background staining
-of the CSF cells. The mean of the negative component is
+Overall, the histogram reveals a good model fit but also shows some background
+staining of the CSF cells. The mean of the negative component is 
 `r round(demuxmix:::getMu1(dmm@models[["HTO"]], standardize=TRUE), digits=1)`
 reads. Still, the overlap with the positive component (mean of
 `r round(demuxmix:::getMu2(dmm@models[["HTO"]], standardize=TRUE), digits=1)`
-reads) is reasonably small and the larger mean of the negative component is
-probably driven partly by the large sequencing depth of the HTO library. The
-scatter plot shows that a smaller set of cells has a lower RNA content (y axis)
-and that those cells require less HTO counts (x axis) in order to be classified
-as positive (red color).
+is reasonably small, and the larger mean of the negative component is probably
+driven partly by the large sequencing depth of the HTO library. Moreover,
+the scatter plot shows that a smaller set of cells has a lower RNA content
+(y-axis) and that those cells require less HTO counts (x-axis) in order
+to be classified as positive (red color).
 
-Finally, we use the genetic demultiplexing to assess *demuxmix's* performance.
+Finally, we use genetic demultiplexing to assess *demuxmix's* performance.
 Multi-sample multiplets detected by freemuxlet are removed since multiplets
-cannot be detected when just one of two samples was stained. We also
-remove cells which were not classified with high confidence by freemuxlet.
+cannot be detected when just one of two samples is stained. We also
+remove cells that were not classified with high confidence by freemuxlet.
+
 ```{r csfBenchmark}
 class <- dmmClassify(dmm)
 highConf <- csf$freemuxlet %in% c("0,0", "1,1") &
@@ -443,14 +537,14 @@ sum(csf$freemuxlet[highConf] == "1,1" & class$HTO[highConf] == "negative") /
 
 With the default acceptance probability of 0.9, *demuxmix* achieved a
 sensitivity and specificity above 95%. Only
-`r sum(class$HTO[highConf] == "uncertain")` cells are classified as "uncertain"
-and have to be discarded.
+`r sum(class$HTO[highConf] == "uncertain")` cells were classified as
+"uncertain" and have to be discarded.
 
-For comparison, we run *demuxmix* again and this time manually select the
+For comparison, we run *demuxmix* again and, this time, manually select the
 naive mixture model.
 
 ```{r csfBenchmarkNaive}
-dmmNaive <- demuxmix(hto, model="naive")
+dmmNaive <- demuxmix(hto, model = "naive")
 class <- dmmClassify(dmmNaive)
 table(class$HTO[highConf], csf$freemuxlet[highConf])
 
@@ -463,10 +557,10 @@ sum(csf$freemuxlet[highConf] == "1,1" & class$HTO[highConf] == "negative") /
     sum(csf$freemuxlet[highConf] == "1,1" & class$HTO[highConf] != "uncertain")
 ```
 
-Compared to the regression mixture model, the naive model achieved a slightly
-lower sensitivity and specificity, and, in addition, more cells were classified
-as "uncertain" demonstrating the benefit of modeling the relationship between
-number of detected genes and HTO counts.
+The naive model achieved a slightly lower sensitivity and specificity than the
+regression mixture model. In addition, more cells were classified as
+"uncertain", demonstrating the benefit of modeling the relationship between
+the number of detected genes and HTO counts.
 
 
 # Session Info
