@@ -2,7 +2,6 @@
 % Please edit documentation in R/demuxmix-package.R
 \docType{package}
 \name{demuxmix-package}
-\alias{demuxmix}
 \alias{demuxmix-package}
 \title{demuxmix: Demultiplexing oligo-barcoded scRNA-seq data using regression mixture models}
 \description{
