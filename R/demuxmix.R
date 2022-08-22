@@ -362,18 +362,22 @@ dmmApplyModel <- function(model, hto, rna, alpha = 0.9,
     k.rna <- rep_len(k.rna, length.out = n)
 
     # Run preprocessing, model fitting, and classification for each HTO
-    outliers <- matrix(NA, nrow = nrow(hto), ncol = ncol(hto))
-    rownames(outliers) <- rownames(hto)
-    colnames(outliers) <- colnames(hto)
-    clusterInit <- matrix(NA, nrow = nrow(hto), ncol = ncol(hto))
-    rownames(clusterInit) <- rownames(hto)
-    colnames(clusterInit) <- colnames(hto)
-    posteriorProb <- matrix(NA, nrow = nrow(hto), ncol = ncol(hto))
-    rownames(posteriorProb) <- rownames(hto)
-    colnames(posteriorProb) <- colnames(hto)
-    tailException <- matrix(NA, nrow = nrow(hto), ncol = ncol(hto))
-    rownames(tailException) <- rownames(hto)
-    colnames(tailException) <- colnames(hto)
+    outliers <- matrix(NA,
+        nrow = nrow(hto), ncol = ncol(hto),
+        dimnames = list(rownames(hto), colnames(hto))
+    )
+    clusterInit <- matrix(NA,
+        nrow = nrow(hto), ncol = ncol(hto),
+        dimnames = list(rownames(hto), colnames(hto))
+    )
+    posteriorProb <- matrix(NA,
+        nrow = nrow(hto), ncol = ncol(hto),
+        dimnames = list(rownames(hto), colnames(hto))
+    )
+    tailException <- matrix(NA,
+        nrow = nrow(hto), ncol = ncol(hto),
+        dimnames = list(rownames(hto), colnames(hto))
+    )
     mixModels <- list()
     modelSelection <- data.frame()
     for (i in seq_len(n)) {
