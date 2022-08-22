@@ -61,12 +61,12 @@ The scatterplot produced by this method is helpful to assess
 }
 \examples{
 set.seed(2642)
-simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-                                      c(rep(FALSE, 200), rep(TRUE, 220))))
+simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+                                        c(rep(FALSE, 200), rep(TRUE, 220))))
 
-dmmreg <- demuxmix(simdata$hto, rna=simdata$rna, model="reg")
+dmmreg <- demuxmix(simdata$hto, rna = simdata$rna, model = "reg")
 \donttest{plotDmmScatter(dmmreg)}
-\donttest{plotDmmScatter(dmmreg, hto=1, log=FALSE)}
+\donttest{plotDmmScatter(dmmreg, hto = 1, log = FALSE)}
 
 }
 \seealso{

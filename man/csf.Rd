@@ -44,8 +44,8 @@ popscle software package.
 \examples{
 data(csf)
 csf <- csf[csf$NumGenes >= 200, ]
-hto <- t(matrix(csf$HTO, dimnames=list(rownames(csf), "HTO")))
-dmm <- demuxmix(hto, model="naive")
+hto <- t(matrix(csf$HTO, dimnames = list(rownames(csf), "HTO")))
+dmm <- demuxmix(hto, model = "naive")
 summary(dmm)
 certain <- exp(csf$freemuxlet.prob) >= 0.999
 table(dmmClassify(dmm)$HTO[certain], csf$freemuxlet[certain])

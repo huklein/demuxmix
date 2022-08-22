@@ -61,39 +61,41 @@
 #' @importFrom methods setClass new is
 #' @exportClass Demuxmix
 Demuxmix <- setClass("Demuxmix",
-  slots=c(models="list",
-          outliers="matrix",
-          clusterInit="matrix",
-          posteriorProb="matrix",
-          tailException="matrix",
-          modelSelection="data.frame",
-          parameters="list"),
-  validity=function(object) {
-    if(!all(vapply(object@models, is, logical(1), "NaiveMixModel") |
+    slots = c(
+        models = "list",
+        outliers = "matrix",
+        clusterInit = "matrix",
+        posteriorProb = "matrix",
+        tailException = "matrix",
+        modelSelection = "data.frame",
+        parameters = "list"
+    ),
+    validity = function(object) {
+        if (!all(vapply(object@models, is, logical(1), "NaiveMixModel") |
             vapply(object@models, is, logical(1), "RegMixModel"))) {
-      return("models must contain objects of class NaivMixModel or RegMixModel.")
+            return("models must contain objects of class NaivMixModel or RegMixModel.")
+        }
+        if (any(is.na(object@posteriorProb))) {
+            return("posteriorProb must not contain missing values.")
+        }
+        if (any(object@posteriorProb < 0) | any(object@posteriorProb > 1)) {
+            return("All values in posteriorProb must be in [0, 1].")
+        }
+        if (is.null(rownames(object@posteriorProb))) {
+            return("Rownames of posteriorProb must not be NULL.")
+        }
+        if (!all(vapply(object@models, slot, "character(1)", "htoId") ==
+            rownames(object@posteriorProb))) {
+            return("Rownames of posteriorProb must match the htoIds of the models.")
+        }
+        if (!is.element("pAcpt", names(object@parameters))) {
+            return("pAcpt must be element in parameters.")
+        }
+        if (object@parameters$pAcpt < 0 | object@parameters$pAcpt > 1) {
+            return("pAcpt given in parameters must be in [0, 1].")
+        }
+        return(TRUE)
     }
-    if (any(is.na(object@posteriorProb))) {
-      return("posteriorProb must not contain missing values.")
-    }
-    if (any(object@posteriorProb < 0) | any(object@posteriorProb > 1)) {
-      return("All values in posteriorProb must be in [0, 1].")
-    }
-    if (is.null(rownames(object@posteriorProb))) {
-      return("Rownames of posteriorProb must not be NULL.")
-    }
-    if (!all(vapply(object@models, slot, "character(1)", "htoId") ==
-             rownames(object@posteriorProb))) {
-      return("Rownames of posteriorProb must match the htoIds of the models.")
-    }
-    if (!is.element("pAcpt", names(object@parameters))) {
-      return("pAcpt must be element in parameters.")
-    }
-    if (object@parameters$pAcpt < 0 | object@parameters$pAcpt > 1) {
-      return("pAcpt given in parameters must be in [0, 1].")
-    }
-    return(TRUE)
-  }
 )
 
 
@@ -101,38 +103,40 @@ Demuxmix <- setClass("Demuxmix",
 # fitted to a single hastag oligo.
 #' @importFrom methods setClass
 NaiveMixModel <- setClass("NaiveMixModel",
-  slots=c(mu1="numeric",
-          mu2="numeric",
-          theta1="numeric",
-          theta2="numeric",
-          pi="numeric",
-          hto="numeric",
-          htoId="character",
-          parameters="list",
-          log="data.frame",
-          converged="logical"),
-  validity=function(object) {
-    if (length(object@mu1) > 1 |  length(object@mu2) > 1 |
-        length(object@theta1) > 1 | length(object@theta1) > 1) {
-      return("mu and theta must have length 1.")
+    slots = c(
+        mu1 = "numeric",
+        mu2 = "numeric",
+        theta1 = "numeric",
+        theta2 = "numeric",
+        pi = "numeric",
+        hto = "numeric",
+        htoId = "character",
+        parameters = "list",
+        log = "data.frame",
+        converged = "logical"
+    ),
+    validity = function(object) {
+        if (length(object@mu1) > 1 | length(object@mu2) > 1 |
+            length(object@theta1) > 1 | length(object@theta1) > 1) {
+            return("mu and theta must have length 1.")
+        }
+        if (object@mu1 > object@mu2) {
+            return("mu1 must be smaller than mu2.")
+        }
+        if (object@theta1 <= 0 | object@theta2 <= 0) {
+            return("theta1 and theta2 must be larger than 0.")
+        }
+        if (length(object@pi) != 2) {
+            return("pi must be of length 2.")
+        }
+        if (any(object@pi < 0) | any(object@pi > 1)) {
+            return("pi must be 0 <= pi <= 1.")
+        }
+        if (any(object@hto < 0)) {
+            return("hto contain positive numbers.")
+        }
+        return(TRUE)
     }
-    if (object@mu1 > object@mu2) {
-      return("mu1 must be smaller than mu2.")
-    }
-    if (object@theta1 <= 0 | object@theta2 <= 0) {
-      return("theta1 and theta2 must be larger than 0.")
-    }
-    if (length(object@pi) != 2) {
-      return("pi must be of length 2.")
-    }
-    if (any(object@pi < 0) | any(object@pi > 1)) {
-      return("pi must be 0 <= pi <= 1.")
-    }
-    if (any(object@hto < 0)) {
-      return("hto contain positive numbers.")
-    }
-    return(TRUE)
-  }
 )
 
 
@@ -140,26 +144,28 @@ NaiveMixModel <- setClass("NaiveMixModel",
 # fitted to a single hastag oligo.
 #' @importFrom methods setClass
 RegMixModel <- setClass("RegMixModel",
-  slots=c(fit1="ANY",
-          fit2="ANY",
-          pi="numeric",
-          htoId="character",
-          parameters="list",
-          log="data.frame",
-          converged="logical"),
-  validity=function(object) {
-    if (length(object@fit1$y) != length(object@fit2$y)) {
-      return("Both models must be fitted to the same data.")
+    slots = c(
+        fit1 = "ANY",
+        fit2 = "ANY",
+        pi = "numeric",
+        htoId = "character",
+        parameters = "list",
+        log = "data.frame",
+        converged = "logical"
+    ),
+    validity = function(object) {
+        if (length(object@fit1$y) != length(object@fit2$y)) {
+            return("Both models must be fitted to the same data.")
+        }
+        if (!"rna" %in% colnames(object@fit2$model)) {
+            return("rna must be a covariate of the second model.")
+        }
+        if (length(object@pi) != 2) {
+            return("pi must be of length 2.")
+        }
+        if (any(object@pi < 0) | any(object@pi > 1)) {
+            return("pi must be 0 <= pi <= 1.")
+        }
+        return(TRUE)
     }
-    if (! "rna" %in% colnames(object@fit2$model)) {
-      return("rna must be a covariate of the second model.")
-    }
-    if (length(object@pi) !=2) {
-      return("pi must be of length 2.")
-    }
-    if (any(object@pi < 0) | any(object@pi > 1)) {
-      return("pi must be 0 <= pi <= 1.")
-    }
-    return(TRUE)
-  }
 )

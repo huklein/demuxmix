@@ -40,10 +40,10 @@ Results are summarized for the individual HTOs, for all
 }
 \examples{
 set.seed(2642)
-simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-                                      c(rep(FALSE, 200), rep(TRUE, 220))))
+simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+                                        c(rep(FALSE, 200), rep(TRUE, 220))))
 
-dmm <- demuxmix(simdata$hto, rna=simdata$rna)
+dmm <- demuxmix(simdata$hto, rna = simdata$rna)
 summary(dmm)
 pAcpt(dmm) <- 0.05
 summary(dmm)

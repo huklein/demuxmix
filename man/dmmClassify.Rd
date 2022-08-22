@@ -36,10 +36,10 @@ A droplet is labeled as "uncertain" if the posterior probability of
 }
 \examples{
 set.seed(2642)
-simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-                                      c(rep(FALSE, 200), rep(TRUE, 220))))
+simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+                                        c(rep(FALSE, 200), rep(TRUE, 220))))
 
-dmm <- demuxmix(simdata$hto, rna=simdata$rna)
+dmm <- demuxmix(simdata$hto, rna = simdata$rna)
 head(dmmClassify(dmm))
 table(dmmClassify(dmm)$HTO, simdata$groundTruth)
 

@@ -179,14 +179,14 @@ The single cell dataset should undergo basic filtering to
 }
 \examples{
 set.seed(2642)
-simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-                                      c(rep(FALSE, 200), rep(TRUE, 220))))
+simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+                                        c(rep(FALSE, 200), rep(TRUE, 220))))
 
-dmm <- demuxmix(simdata$hto, model="naive")
+dmm <- demuxmix(simdata$hto, model = "naive")
 dmm
 table(dmmClassify(dmm)$HTO, simdata$groundTruth)
 
-dmmreg <- demuxmix(simdata$hto, rna=simdata$rna)
+dmmreg <- demuxmix(simdata$hto, rna = simdata$rna)
 dmm
 table(dmmClassify(dmmreg)$HTO, simdata$groundTruth)
 summary(dmmreg)

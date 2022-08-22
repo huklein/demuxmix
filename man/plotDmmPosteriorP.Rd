@@ -38,15 +38,15 @@ The histogram visualizes how well the positive droplets can be
 }
 \examples{
 set.seed(2642)
-simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-                                      c(rep(FALSE, 200), rep(TRUE, 220))))
+simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+                                        c(rep(FALSE, 200), rep(TRUE, 220))))
 
-dmm <- demuxmix(simdata$hto, model="naive")
+dmm <- demuxmix(simdata$hto, model = "naive")
 \donttest{plotDmmPosteriorP(dmm)}
 
-dmmreg <- demuxmix(simdata$hto, rna=simdata$rna, model="auto")
+dmmreg <- demuxmix(simdata$hto, rna = simdata$rna, model = "auto")
 \donttest{plotDmmPosteriorP(dmmreg)}
-\donttest{plotDmmPosteriorP(dmmreg, hto=1)}
+\donttest{plotDmmPosteriorP(dmmreg, hto = 1)}
 
 }
 \seealso{

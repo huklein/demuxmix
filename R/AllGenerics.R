@@ -149,14 +149,14 @@
 #'   
 #' @examples
 #' set.seed(2642)
-#' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-#'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
+#' simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+#'                                         c(rep(FALSE, 200), rep(TRUE, 220))))
 #' 
-#' dmm <- demuxmix(simdata$hto, model="naive")
+#' dmm <- demuxmix(simdata$hto, model = "naive")
 #' dmm
 #' table(dmmClassify(dmm)$HTO, simdata$groundTruth)
 #' 
-#' dmmreg <- demuxmix(simdata$hto, rna=simdata$rna)
+#' dmmreg <- demuxmix(simdata$hto, rna = simdata$rna)
 #' dmm
 #' table(dmmClassify(dmmreg)$HTO, simdata$groundTruth)
 #' summary(dmmreg)
@@ -175,9 +175,13 @@
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("demuxmix",
-           function(hto, rna, pAcpt=0.9^nrow(hto), model="auto", alpha=0.9, beta=0.9, correctTails=TRUE, tol=10^-5, maxIter=100, k.hto=1.5, k.rna=1.5)
-             standardGeneric("demuxmix"),
-           signature=c("hto", "rna"))
+    function(hto, rna, pAcpt = 0.9^nrow(hto), model = "auto",
+             alpha = 0.9, beta = 0.9, correctTails = TRUE,
+             tol = 10^-5, maxIter = 100, k.hto = 1.5, k.rna = 1.5) {
+        standardGeneric("demuxmix")
+    },
+    signature = c("hto", "rna")
+)
 
 
 
@@ -210,10 +214,10 @@ setGeneric("demuxmix",
 #' 
 #' @examples
 #' set.seed(2642)
-#' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-#'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
+#' simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+#'                                         c(rep(FALSE, 200), rep(TRUE, 220))))
 #' 
-#' dmm <- demuxmix(simdata$hto, rna=simdata$rna)
+#' dmm <- demuxmix(simdata$hto, rna = simdata$rna)
 #' head(dmmClassify(dmm))
 #' table(dmmClassify(dmm)$HTO, simdata$groundTruth)
 #' 
@@ -227,9 +231,11 @@ setGeneric("demuxmix",
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("dmmClassify",
-           function(object)
-             standardGeneric("dmmClassify"),
-           signature="object")
+    function(object) {
+        standardGeneric("dmmClassify")
+    },
+    signature = "object"
+)
 
 
 
@@ -270,25 +276,27 @@ setGeneric("dmmClassify",
 #' 
 #' @examples 
 #' set.seed(2642)
-#' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-#'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
+#' simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+#'                                         c(rep(FALSE, 200), rep(TRUE, 220))))
 #' 
-#' dmm <- demuxmix(simdata$hto, model="naive")
+#' dmm <- demuxmix(simdata$hto, model = "naive")
 #' dmmOverlap(dmm)
 #' 
-#' dmmreg <- demuxmix(simdata$hto, rna=simdata$rna)
+#' dmmreg <- demuxmix(simdata$hto, rna = simdata$rna)
 #' dmmOverlap(dmmreg)
-#' dmmOverlap(dmmreg, hto="HTO_1")
-#' dmmOverlap(dmmreg, hto=2)
+#' dmmOverlap(dmmreg, hto = "HTO_1")
+#' dmmOverlap(dmmreg, hto = 2)
 #' 
 #' @aliases dmmOverlap,Demuxmix,missing-method dmmOverlap,Demuxmix,ANY-method
 #'
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("dmmOverlap",
-           function(object, hto, tol=0.001)
-             standardGeneric("dmmOverlap"),
-           signature=c("object", "hto"))
+    function(object, hto, tol = 0.001) {
+        standardGeneric("dmmOverlap")
+    },
+    signature = c("object", "hto")
+)
 
 
 
@@ -344,9 +352,9 @@ setGeneric("dmmOverlap",
 #' set.seed(2642)
 #' class <- rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
 #'                c(rep(FALSE, 200), rep(TRUE, 220)))
-#' simdata <- dmmSimulateHto(class=class, mu=c(150, 300), theta=c(15, 20),
-#'                           muAmbient=c(30, 30), thetaAmbient=c(10, 10),
-#'                           muRna=3000, thetaRna=30)
+#' simdata <- dmmSimulateHto(class = class, mu = c(150, 300), theta = c(15, 20),
+#'                           muAmbient = c(30, 30), thetaAmbient = c(10, 10),
+#'                           muRna = 3000, thetaRna = 30)
 #' dim(simdata$hto)
 #' table(simdata$groundTruth)
 #' 
@@ -365,9 +373,13 @@ setGeneric("dmmOverlap",
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("dmmSimulateHto",
-           function(class, mu=180, theta=15, muAmbient=30, thetaAmbient=10, muRna=3000, thetaRna=30)
-             standardGeneric("dmmSimulateHto"),
-           signature="class")
+    function(class, mu = 180, theta = 15,
+             muAmbient = 30, thetaAmbient = 10,
+             muRna = 3000, thetaRna = 30) {
+        standardGeneric("dmmSimulateHto")
+    },
+    signature = "class"
+)
 
 
 
@@ -403,10 +415,10 @@ setGeneric("dmmSimulateHto",
 #' 
 #' @examples 
 #' set.seed(2642)
-#' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-#'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
+#' simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+#'                                         c(rep(FALSE, 200), rep(TRUE, 220))))
 #' 
-#' dmm <- demuxmix(simdata$hto, rna=simdata$rna)
+#' dmm <- demuxmix(simdata$hto, rna = simdata$rna)
 #' summary(dmm)
 #' pAcpt(dmm) <- 0.05
 #' summary(dmm)
@@ -461,13 +473,13 @@ setGeneric("summary")
 #' 
 #' @examples
 #' set.seed(2642)
-#' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-#'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
+#' simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+#'                                         c(rep(FALSE, 200), rep(TRUE, 220))))
 #' 
 #' dmm <- demuxmix(simdata$hto, simdata$rna)
 #' \donttest{plotDmmHistogram(dmm)}
-#' p <- plotDmmHistogram(dmm, hto=1)
-#' \donttest{p + ggplot2::coord_cartesian(xlim=c(25, 100), ylim=c(0, 0.01))}
+#' p <- plotDmmHistogram(dmm, hto = 1)
+#' \donttest{p + ggplot2::coord_cartesian(xlim = c(25, 100), ylim = c(0, 0.01))}
 #'
 #' @aliases plotDmmHistogram,Demuxmix,missing-method
 #'   plotDmmHistogram,Demuxmix,ANY-method
@@ -475,9 +487,11 @@ setGeneric("summary")
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("plotDmmHistogram",
-           function(object, hto, quantile=0.95, binwidth=5)
-             standardGeneric("plotDmmHistogram"),
-           signature=c("object", "hto"))
+    function(object, hto, quantile = 0.95, binwidth = 5) {
+        standardGeneric("plotDmmHistogram")
+    },
+    signature = c("object", "hto")
+)
 
 
 
@@ -522,12 +536,12 @@ setGeneric("plotDmmHistogram",
 #' 
 #' @examples
 #' set.seed(2642)
-#' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-#'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
+#' simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+#'                                         c(rep(FALSE, 200), rep(TRUE, 220))))
 #' 
-#' dmmreg <- demuxmix(simdata$hto, rna=simdata$rna, model="reg")
+#' dmmreg <- demuxmix(simdata$hto, rna = simdata$rna, model = "reg")
 #' \donttest{plotDmmScatter(dmmreg)}
-#' \donttest{plotDmmScatter(dmmreg, hto=1, log=FALSE)}
+#' \donttest{plotDmmScatter(dmmreg, hto = 1, log = FALSE)}
 #'
 #' @aliases plotDmmScatter,Demuxmix,missing-method
 #'   plotDmmScatter,Demuxmix,ANY-method
@@ -535,9 +549,12 @@ setGeneric("plotDmmHistogram",
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("plotDmmScatter",
-           function(object, hto, log=TRUE, pointsize=1.2, plotDecBoundary=TRUE, tol=0.01)
-             standardGeneric("plotDmmScatter"),
-           signature=c("object", "hto"))
+    function(object, hto, log = TRUE, pointsize = 1.2,
+             plotDecBoundary = TRUE, tol = 0.01) {
+        standardGeneric("plotDmmScatter")
+    },
+    signature = c("object", "hto")
+)
 
 
 
@@ -569,15 +586,15 @@ setGeneric("plotDmmScatter",
 #' 
 #' @examples
 #' set.seed(2642)
-#' simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-#'                                       c(rep(FALSE, 200), rep(TRUE, 220))))
+#' simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+#'                                         c(rep(FALSE, 200), rep(TRUE, 220))))
 #' 
-#' dmm <- demuxmix(simdata$hto, model="naive")
+#' dmm <- demuxmix(simdata$hto, model = "naive")
 #' \donttest{plotDmmPosteriorP(dmm)}
 #' 
-#' dmmreg <- demuxmix(simdata$hto, rna=simdata$rna, model="auto")
+#' dmmreg <- demuxmix(simdata$hto, rna = simdata$rna, model = "auto")
 #' \donttest{plotDmmPosteriorP(dmmreg)}
-#' \donttest{plotDmmPosteriorP(dmmreg, hto=1)}
+#' \donttest{plotDmmPosteriorP(dmmreg, hto = 1)}
 #'
 #' @aliases plotDmmPosteriorP,Demuxmix,missing-method
 #'   plotDmmPosteriorP,Demuxmix,ANY-method
@@ -585,59 +602,79 @@ setGeneric("plotDmmScatter",
 #' @importFrom methods setGeneric
 #' @export
 setGeneric("plotDmmPosteriorP",
-           function(object, hto, bins=50)
-             standardGeneric("plotDmmPosteriorP"),
-           signature=c("object", "hto"))
+    function(object, hto, bins = 50) {
+        standardGeneric("plotDmmPosteriorP")
+    },
+    signature = c("object", "hto")
+)
 
 
 
 #' @export
 setGeneric("pAcpt",
-           function(object)
-             standardGeneric("pAcpt"),
-           signature="object")
+    function(object) {
+        standardGeneric("pAcpt")
+    },
+    signature = "object"
+)
 
 #' @export
 setGeneric("pAcpt<-",
-           function(object, value)
-             standardGeneric("pAcpt<-"),
-           signature=c("object", "value"))
+    function(object, value) {
+        standardGeneric("pAcpt<-")
+    },
+    signature = c("object", "value")
+)
 
 
 
 # Internal methods for NaiveMixModel and RegMixModel
 setGeneric("getPosteriorProbability",
-           function(model)
-             standardGeneric("getPosteriorProbability"),
-           signature="model")
+    function(model) {
+        standardGeneric("getPosteriorProbability")
+    },
+    signature = "model"
+)
 
 
 setGeneric("getHto",
-           function(model, standardize=FALSE)
-             standardGeneric("getHto"),
-           signature="model")
+    function(model, standardize = FALSE) {
+        standardGeneric("getHto")
+    },
+    signature = "model"
+)
 
 setGeneric("getMu1",
-           function(model, standardize=FALSE)
-             standardGeneric("getMu1"),
-           signature="model")
+    function(model, standardize = FALSE) {
+        standardGeneric("getMu1")
+    },
+    signature = "model"
+)
 
 setGeneric("getMu2",
-           function(model, standardize=FALSE)
-             standardGeneric("getMu2"),
-           signature="model")
+    function(model, standardize = FALSE) {
+        standardGeneric("getMu2")
+    },
+    signature = "model"
+)
 
 setGeneric("getTheta1",
-           function(model)
-             standardGeneric("getTheta1"),
-           signature="model")
+    function(model) {
+        standardGeneric("getTheta1")
+    },
+    signature = "model"
+)
 
 setGeneric("getTheta2",
-           function(model)
-             standardGeneric("getTheta2"),
-           signature="model")
+    function(model) {
+        standardGeneric("getTheta2")
+    },
+    signature = "model"
+)
 
 setGeneric("getPi",
-           function(model)
-             standardGeneric("getPi"),
-           signature="model")
+    function(model) {
+        standardGeneric("getPi")
+    },
+    signature = "model"
+)

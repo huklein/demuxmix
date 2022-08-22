@@ -53,13 +53,13 @@ A histogram overlaid with the pmf is a standard tool to
 }
 \examples{
 set.seed(2642)
-simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-                                      c(rep(FALSE, 200), rep(TRUE, 220))))
+simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+                                        c(rep(FALSE, 200), rep(TRUE, 220))))
 
 dmm <- demuxmix(simdata$hto, simdata$rna)
 \donttest{plotDmmHistogram(dmm)}
-p <- plotDmmHistogram(dmm, hto=1)
-\donttest{p + ggplot2::coord_cartesian(xlim=c(25, 100), ylim=c(0, 0.01))}
+p <- plotDmmHistogram(dmm, hto = 1)
+\donttest{p + ggplot2::coord_cartesian(xlim = c(25, 100), ylim = c(0, 0.01))}
 
 }
 \seealso{

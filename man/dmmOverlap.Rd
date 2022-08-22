@@ -47,16 +47,16 @@ The probability mass shared between the negative and positive
 }
 \examples{
 set.seed(2642)
-simdata <- dmmSimulateHto(class=rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
-                                      c(rep(FALSE, 200), rep(TRUE, 220))))
+simdata <- dmmSimulateHto(class = rbind(c(rep(TRUE, 220), rep(FALSE, 200)),
+                                        c(rep(FALSE, 200), rep(TRUE, 220))))
 
-dmm <- demuxmix(simdata$hto, model="naive")
+dmm <- demuxmix(simdata$hto, model = "naive")
 dmmOverlap(dmm)
 
-dmmreg <- demuxmix(simdata$hto, rna=simdata$rna)
+dmmreg <- demuxmix(simdata$hto, rna = simdata$rna)
 dmmOverlap(dmmreg)
-dmmOverlap(dmmreg, hto="HTO_1")
-dmmOverlap(dmmreg, hto=2)
+dmmOverlap(dmmreg, hto = "HTO_1")
+dmmOverlap(dmmreg, hto = 2)
 
 }
 \seealso{
