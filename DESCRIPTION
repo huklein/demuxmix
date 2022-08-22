@@ -14,7 +14,8 @@ Authors@R: person("Hans-Ulrich", "Klein",
 License: Artistic-2.0
 Depends: R (>= 4.0.0)
 Imports: stats, MASS, Matrix, ggplot2, gridExtra, methods
-Suggests: BiocStyle, knitr, rmarkdown, cowplot, testthat (>= 3.0.0)
+Suggests: BiocStyle, cowplot, DropletUtils, knitr, reshape2, rmarkdown,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
 biocViews: SingleCell, Sequencing, Preprocessing, Classification, Regression
 BiocType: Software
