@@ -216,7 +216,7 @@ set.seed(8514)
 htoExp <- StoeckiusHashingData(type = "mixed")
 eDrops <- emptyDrops(counts(htoExp))
 htoExp <- htoExp[, which(eDrops$FDR <= 0.001)]
-rna <- colSums(counts(htoExp))
+rna <- colSums(counts(htoExp) > 0)
 hto <- counts(altExp(htoExp))
 dim(hto)
 
