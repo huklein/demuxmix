@@ -366,7 +366,7 @@ experiment (cross-staining, background HTOs, cell debris). Only the last
 factor (iv) relates to the actual quality of the data. Specifically,
 (i) and (ii) can both lead to a histogram that looks like a vertical blue
 line with an x-offset of 0 and a flat horizontal red line with a y-offset
-of 0. The reason is that a large sequencing depth (i) results in large
+of 0. The reason is that a large sequencing depth results in large
 HTO counts in positive droplets so that the probability mass of the red
 component spreads over an extensive range of values on the x-axis and
 appears flat compared to the sharp location of the blue background component.
@@ -443,7 +443,7 @@ assigned to different singlet classes by the two approaches. However,
 "uncertain", which is expected when looking at the lower panel of Figure
 \@ref(fig:qualityScatterplot). In contrast to *demuxmix*, *hashedDrops* does
 not utilize the positive association between the number of genes and HTO counts
-we simulated in this dataset.
+explicitly simulated in this dataset.
 
 
 # Special usecase: pooling non-labeled with labeled cells
@@ -508,7 +508,7 @@ Overall, the histogram reveals a good model fit but also shows some background
 staining of the CSF cells. The mean of the negative component is 
 `r round(demuxmix:::getMu1(dmm@models[["HTO"]], standardize=TRUE), digits=1)`
 reads. Still, the overlap with the positive component (mean of
-`r round(demuxmix:::getMu2(dmm@models[["HTO"]], standardize=TRUE), digits=1)`
+`r round(demuxmix:::getMu2(dmm@models[["HTO"]], standardize=TRUE), digits=1)`)
 is reasonably small, and the larger mean of the negative component is probably
 driven partly by the large sequencing depth of the HTO library. Moreover,
 the scatter plot shows that a smaller set of cells has a lower RNA content
