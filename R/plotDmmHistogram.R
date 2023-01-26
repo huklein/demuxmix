@@ -1,5 +1,5 @@
 #' @importFrom stats dnbinom qnbinom density
-#' @importFrom ggplot2 ggplot geom_histogram stat_function xlab ylab coord_cartesian aes stat
+#' @importFrom ggplot2 ggplot geom_histogram stat_function xlab ylab coord_cartesian aes after_stat
 .plotDmmHistogram <- function(model, quantile = 0.95, binwidth = 5) {
     hto <- getHto(model, standardize = TRUE)
     mu1 <- getMu1(model, standardize = TRUE)
@@ -31,7 +31,7 @@
     df <- data.frame(hto = hto)
 
     p <- ggplot(df, aes(x = hto)) +
-        geom_histogram(aes(y = stat(density)), alpha = 0.4, binwidth = binwidth) +
+        geom_histogram(aes(y = after_stat(density)), alpha = 0.4, binwidth = binwidth) +
         stat_function(fun = mixture, lwd = 1, n = xmax, col = "black") +
         stat_function(fun = comp1, lwd = 1, n = xmax, col = "dodgerblue") +
         stat_function(fun = comp2, lwd = 1, n = xmax, col = "firebrick2") +
