@@ -19,7 +19,8 @@ demuxmix(
   tol = 10^-5,
   maxIter = 100,
   k.hto = 1.5,
-  k.rna = 1.5
+  k.rna = 1.5,
+  clusterInit = list()
 )
 }
 \arguments{
@@ -69,6 +70,13 @@ outliers. See details.}
 \item{k.rna}{Factor to define outliers in the numbers of detected genes.
 Numbers of detected genes larger than the 0.75 quantile +
 \code{k.rna} * IQR are considered outliers. See details.}
+
+\item{clusterInit}{Optional list of numeric vectors to manually specify the
+droplet to component assignment used to initialize the EM algorithm. The
+name of each list element must match a row name of \code{hto}. The length
+of each element must match the number of columns of \code{hto}. Only the
+values \code{1} and \code{2} are allowed, where \code{1} indicates the
+respective droplet belongs to the negative component with lower mean count.}
 }
 \value{
 \code{demuxmix} returns an object of class \code{\link{Demuxmix}}.
@@ -127,11 +135,18 @@ The single cell dataset should undergo basic filtering to
     "regpos", all droplets (both groups) with number of detected genes larger
     than the 0.75 quantile + k.rna times the IQR are marked as outliers, too,
     since these cells could affect the fitting of the regression model
-    negatively. If more than 5\% of the cells are marked as outliers,
+    negatively. If more than 15\% of the cells are marked as outliers,
     a warning message is printed and larger values for \code{k.hto}
     and \code{k.rna} might be preferable. If the model fit seems to be
     affected by a few large values (very high variance of the positive
-    component), smaller values should be chosen.
+    component), smaller values should be chosen. On rare occasions, k-means
+    clustering can result in inadequate clusters, and the derived
+    distributional parameters are invalid. Poor clustering can be observed
+    if (i) the HTO failed and the distribution is not bimodal or (ii) the
+    fraction of positive cells tagged by the HTO is very small. An error
+    message is displayed, and if (ii) is determined as the cause, an initial
+    manual assignment can be specified by \code{clusterInit} to bypass
+    the k-means clustering.
     
     \item Model fitting (\code{model}, \code{alpha}, \code{beta},
     \code{correctTails}, \code{tol}, \code{maxIter}). An EM algorithm is

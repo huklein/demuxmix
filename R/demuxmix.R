@@ -1,17 +1,19 @@
 # Internal method dmmPreprocess
 #' @importFrom stats kmeans median quantile
-dmmPreprocess <- function(hto, rna, k.hto = 1.5, k.rna = 1.5) {
+dmmPreprocess <- function(hto, rna, k.hto = 1.5, k.rna = 1.5, clusterInit) {
 
-    # Initial k-means
-    # Cluster ID=1 identifies cluster with lower hto counts
-    km <- kmeans(log(hto + 10), centers = 2)
-    ind <- km$cluster == 1
-    if (median(hto[ind]) <= median(hto[!ind])) {
-        clusterInit <- km$cluster
-    } else {
-        clusterInit <- c(2, 1)[km$cluster]
+    if (missing(clusterInit)) {
+        # Initial k-means
+        # Cluster ID=1 identifies cluster with lower hto counts
+        km <- kmeans(log(hto + 10), centers = 2)
+        ind <- km$cluster == 1
+        if (median(hto[ind]) <= median(hto[!ind])) {
+            clusterInit <- km$cluster
+        } else {
+            clusterInit <- c(2, 1)[km$cluster]
+        }
     }
-
+  
     # HTO outliers
     qrtls <- quantile(hto[clusterInit == 2], probs = c(0.25, 0.75))
     th <- qrtls[2] + (k.hto * (qrtls[2] - qrtls[1]))
@@ -58,10 +60,25 @@ dmmFitNaive <- function(hto, clusterInit, tol = 10^-5,
     if (mu1 > mu2) {
         stop(
             "Mean count of cluster 1 must be smaller than mean of cluster 2. ",
-            "Please swap cluster IDs in the clusterInit parameter."
+            "Please swap cluster IDs in the clusterInit parameter for HTO ",
+            htoId, "."
         )
     }
 
+    # Check validity of distribution parameters
+    if (any(is.na(dnbinom(hto, mu = mu1, size = theta1))) |
+        any(is.na(dnbinom(hto, mu = mu2, size = theta2)))) {
+        stop(
+            "Invalid distribution parameters were derived from the initial ",
+            "clustering for HTO \"", htoId, "\". This usually indicates that ",
+            "i) a very small fraction of cells were tagged with this HTO, or ",
+            "ii) the HTO failed and does not show a bimodal distribution. ",
+            "Please verify the HTO's distribution in a histogram and run ",
+            "demuxmix with a initial manual clustering using the clusterInit ",
+            "parameter, if appropriate."
+        )
+    }
+    
     # Run EM algorithm
     iter <- 1
     logLik <- 1
@@ -149,10 +166,25 @@ dmmFitReg <- function(hto, rna, clusterInit, regRnaNegComp = TRUE,
     if (mu1 > mu2) {
         stop(
             "Mean count of cluster 1 must be smaller than mean of cluster 2. ",
-            "Please swap cluster IDs in the clusterInit parameter."
+            "Please swap cluster IDs in the clusterInit parameter for HTO ",
+            htoId, "."
         )
     }
 
+    # Check validity of distribution parameters
+    if (any(is.na(dnbinom(hto, mu = mu1, size = theta1))) |
+        any(is.na(dnbinom(hto, mu = mu2, size = theta2)))) {
+        stop(
+            "Invalid distribution parameters were derived from the initial ",
+            "clustering for HTO \"", htoId, "\". This usually indicates that ",
+            "i) a very small fraction of cells were tagged with this HTO, or ",
+            "ii) the HTO failed and does not show a bimodal distribution. ",
+            "Please verify the HTO's distribution in a histogram and run ",
+            "demuxmix with a initial manual clustering using the clusterInit ",
+            "parameter, if appropriate."
+        )
+    }
+    
     # Run EM algorithm
     iter <- 1
     logLik <- 1
@@ -308,7 +340,8 @@ dmmApplyModel <- function(model, hto, rna, alpha = 0.9,
 # Internal method .demuxmix
 .demuxmix <- function(hto, rna, pAcpt = 0.9^nrow(hto), model = "auto",
                       alpha = 0.9, beta = 0.9, correctTails = TRUE,
-                      tol = 10^-5, maxIter = 100, k.hto = 1.5, k.rna = 1.5) {
+                      tol = 10^-5, maxIter = 100, k.hto = 1.5, k.rna = 1.5,
+                      clusterInit = list()) {
 
     # Check parameters
     n <- nrow(hto)
@@ -352,6 +385,29 @@ dmmApplyModel <- function(model, hto, rna, alpha = 0.9,
     if (pAcpt < 0 | pAcpt > 1) {
         stop("pAcpt must be between 0 and 1.")
     }
+    if (length(clusterInit) > 0) {
+        if (is.null(names(clusterInit))) {
+            stop("Names of elements in clusterInit must match HTO names.")
+        }
+        if (any(is.na(names(clusterInit)))) {
+            stop("Names of elements in clusterInit must match HTO names.")
+        }
+        if (any(!names(clusterInit) %in% rownames(hto))) {
+            stop("Names of elements in clusterInit must match HTO names.")
+        }
+        if (any(duplicated(names(clusterInit)))) {
+            stop("Names of elements in clusterInit must be unique.")
+        }
+        if (!all(vapply(clusterInit, function (x) {
+                 return(all(x %in% c(1, 2)))}, FUN.VALUE = logical(1)))) {
+            stop("All entries in clusterInit must be 1 or 2.")
+        }
+        if (!all(vapply(clusterInit, length, FUN.VALUE = integer(1))
+                 == ncol(hto))) {
+            stop("All elements of clusterInit must have the same length as ",
+                 "columns in the hto matrix.")
+        }
+    }
     model <- rep_len(model, length.out = n)
     alpha <- rep_len(alpha, length.out = n)
     beta <- rep_len(beta, length.out = n)
@@ -366,7 +422,7 @@ dmmApplyModel <- function(model, hto, rna, alpha = 0.9,
         nrow = nrow(hto), ncol = ncol(hto),
         dimnames = list(rownames(hto), colnames(hto))
     )
-    clusterInit <- matrix(NA,
+    clusterInitMat <- matrix(NA,
         nrow = nrow(hto), ncol = ncol(hto),
         dimnames = list(rownames(hto), colnames(hto))
     )
@@ -382,7 +438,13 @@ dmmApplyModel <- function(model, hto, rna, alpha = 0.9,
     modelSelection <- data.frame()
     for (i in seq_len(n)) {
         if (model[i] == "naive") {
-            prepData <- dmmPreprocess(hto[i, ], k.hto = k.hto[i])
+            if (rownames(hto)[i] %in% names(clusterInit)) {
+                prepData <- dmmPreprocess(hto[i, ], k.hto = k.hto[i],
+                    clusterInit = clusterInit[[rownames(hto)[i]]]
+                )
+            } else {
+                prepData <- dmmPreprocess(hto[i, ], k.hto = k.hto[i])
+            }
             mixModels[[i]] <- dmmFitNaive(
                 hto = prepData$hto[!prepData$outlier],
                 clusterInit = prepData$cluster[!prepData$outlier],
@@ -390,16 +452,23 @@ dmmApplyModel <- function(model, hto, rna, alpha = 0.9,
                 htoId = rownames(hto)[i]
             )
             outliers[i, ] <- prepData$outlier
-            clusterInit[i, ] <- prepData$cluster
+            clusterInitMat[i, ] <- prepData$cluster
             res <- dmmApplyModel(mixModels[[i]],
                 hto = hto[i, ],
                 alpha = alpha[i], beta = beta[i],
                 correctTails = correctTails[i]
             )
         } else if (model[i] == "reg" | model[i] == "regpos") {
-            prepData <- dmmPreprocess(hto[i, ], rna,
-                k.hto = k.hto[i], k.rna = k.rna[i]
-            )
+            if (rownames(hto)[i] %in% names(clusterInit)) {
+                prepData <- dmmPreprocess(hto[i, ], rna, 
+                    k.hto = k.hto[i], k.rna = k.rna[i],
+                    clusterInit = clusterInit[[rownames(hto)[i]]]
+                )
+            } else {
+                prepData <- dmmPreprocess(hto[i, ], rna,
+                    k.hto = k.hto[i], k.rna = k.rna[i]
+                )
+            }
             mixModels[[i]] <- dmmFitReg(
                 hto = prepData$hto[!prepData$outlier],
                 rna = prepData$rna[!prepData$outlier],
@@ -409,17 +478,27 @@ dmmApplyModel <- function(model, hto, rna, alpha = 0.9,
                 htoId = rownames(hto)[i]
             )
             outliers[i, ] <- prepData$outlier
-            clusterInit[i, ] <- prepData$cluster
+            clusterInitMat[i, ] <- prepData$cluster
             res <- dmmApplyModel(mixModels[[i]],
                 hto = hto[i, ], rna = rna,
                 alpha = alpha[i], beta = beta[i],
                 correctTails = correctTails[i]
             )
         } else if (model[i] == "auto") {
-            prepDataN <- dmmPreprocess(hto[i, ], k.hto = k.hto[i])
-            prepDataR <- dmmPreprocess(hto[i, ], rna,
-                k.hto = k.hto[i], k.rna = k.rna[i]
-            )
+            if (rownames(hto)[i] %in% names(clusterInit)) {
+                prepDataN <- dmmPreprocess(hto[i, ], k.hto = k.hto[i],
+                    clusterInit = clusterInit[[rownames(hto)[i]]]
+                )
+                prepDataR <- dmmPreprocess(hto[i, ], rna, 
+                    k.hto = k.hto[i], k.rna = k.rna[i],
+                    clusterInit = clusterInit[[rownames(hto)[i]]]
+                )
+            } else {
+                prepDataN <- dmmPreprocess(hto[i, ], k.hto = k.hto[i])
+                prepDataR <- dmmPreprocess(hto[i, ], rna,
+                    k.hto = k.hto[i], k.rna = k.rna[i]
+                )
+            }
             mmNaive <- dmmFitNaive(
                 hto = prepDataN$hto[!prepDataN$outlier],
                 clusterInit = prepDataN$cluster[!prepDataN$outlier],
@@ -458,7 +537,7 @@ dmmApplyModel <- function(model, hto, rna, alpha = 0.9,
                 bestModel <- "naive"
                 mixModels[[i]] <- mmNaive
                 outliers[i, ] <- prepDataN$outlier
-                clusterInit[i, ] <- prepDataN$cluster
+                clusterInitMat[i, ] <- prepDataN$cluster
                 res <- dmmApplyModel(mmNaive,
                     hto = hto[i, ],
                     alpha = alpha[i], beta = beta[i],
@@ -468,7 +547,7 @@ dmmApplyModel <- function(model, hto, rna, alpha = 0.9,
                 bestModel <- "regpos"
                 mixModels[[i]] <- mmRegpos
                 outliers[i, ] <- prepDataR$outlier
-                clusterInit[i, ] <- prepDataR$cluster
+                clusterInitMat[i, ] <- prepDataR$cluster
                 res <- dmmApplyModel(mmRegpos,
                     hto = hto[i, ], rna = rna,
                     alpha = alpha[i], beta = beta[i],
@@ -478,7 +557,7 @@ dmmApplyModel <- function(model, hto, rna, alpha = 0.9,
                 bestModel <- "reg"
                 mixModels[[i]] <- mmReg
                 outliers[i, ] <- prepDataR$outlier
-                clusterInit[i, ] <- prepDataR$cluster
+                clusterInitMat[i, ] <- prepDataR$cluster
                 res <- dmmApplyModel(mmReg,
                     hto = hto[i, ], rna = rna,
                     alpha = alpha[i], beta = beta[i],
@@ -519,7 +598,7 @@ dmmApplyModel <- function(model, hto, rna, alpha = 0.9,
     dmm <- Demuxmix(
         models = mixModels,
         outliers = outliers,
-        clusterInit = clusterInit,
+        clusterInit = clusterInitMat,
         posteriorProb = posteriorProb,
         tailException = tailException,
         modelSelection = modelSelection,
