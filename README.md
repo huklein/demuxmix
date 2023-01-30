@@ -34,3 +34,9 @@ command and clicking on the resulting HTML link:
 ``` r
 browseVignettes("demuxmix")
 ```
+
+
+## Manuscript
+
+A preprint describing the technical details of demuxmix is available at bioRxiv:
+https://www.biorxiv.org/content/10.1101/2023.01.27.525961v1
