@@ -1,11 +1,11 @@
 bibentry(
     bibtype = "article",
     author = person("Hans-Ulrich", "Klein"),
-    title="demuxmix: demultiplexing oligonucleotide-barcoded single-cell RNA sequencing data with regression mixture models",
-    journal="Bioinformatics",
-    year="2023",
-    volume="39",
-    issue="8",
-    pages="btad481",
+    title = "demuxmix: demultiplexing oligonucleotide-barcoded single-cell RNA sequencing data with regression mixture models",
+    journal = "Bioinformatics",
+    year = "2023",
+    volume = "39",
+    issue = "8",
+    pages = "btad481",
     doi = "10.1093/bioinformatics/btad481"
 )
