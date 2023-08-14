@@ -34,3 +34,13 @@ command and clicking on the resulting HTML link:
 ``` r
 browseVignettes("demuxmix")
 ```
+
+
+## Manuscript
+
+A manuscript describing the technical details of demuxmix is
+available at Bioinformatics:  
+Hans-Ulrich Klein, demuxmix: demultiplexing oligonucleotide-barcoded
+single-cell RNA sequencing data with regression mixture models,
+*Bioinformatics*, Volume 39, Issue 8, August 2023, btad481  
+<https://doi.org/10.1093/bioinformatics/btad481>
