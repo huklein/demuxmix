@@ -38,5 +38,9 @@ browseVignettes("demuxmix")
 
 ## Manuscript
 
-A preprint describing the technical details of demuxmix is available at bioRxiv:
-https://www.biorxiv.org/content/10.1101/2023.01.27.525961v1
+A manuscript describing the technical details of demuxmix is
+available at Bioinformatics:  
+Hans-Ulrich Klein, demuxmix: demultiplexing oligonucleotide-barcoded
+single-cell RNA sequencing data with regression mixture models,
+*Bioinformatics*, Volume 39, Issue 8, August 2023, btad481  
+<https://doi.org/10.1093/bioinformatics/btad481>
