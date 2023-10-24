@@ -1,6 +1,6 @@
 Package: demuxmix
 Title: Demultiplexing oligo-barcoded scRNA-seq data using regression mixture models
-Version: 1.4.0
+Version: 1.5.0
 Date: 2023-08-14
 Description: A package for demultiplexing single-cell sequencing experiments
     of pooled cells labeled with barcode oligonucleotides. The package
