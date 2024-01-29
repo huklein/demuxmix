@@ -11,6 +11,12 @@
     type <- c("negative", "singlet", "multiplet")[pmin(apply(posHashtags, 2, sum), 2) + 1]
     hto[prob < p] <- "uncertain"
     type[prob < p] <- "uncertain"
+    
+    converged <- sapply(object@models, function (obj) {return(obj@converged)})
+    if (!all(converged)) {
+      warning("Not all models converged. ",
+              "Do not use the classification results.")
+    }
     return(data.frame(HTO = hto, Prob = prob, Type = type))
 }
 

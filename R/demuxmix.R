@@ -57,6 +57,7 @@ dmmFitNaive <- function(hto, clusterInit, tol = 10^-5,
     var2 <- var(hto[!ind])
     theta1 <- mu1^2 / (var1 - mu1)
     theta2 <- mu2^2 / (var2 - mu2)
+    
     if (mu1 > mu2) {
         stop(
             "Mean count of cluster 1 must be smaller than mean of cluster 2. ",
@@ -65,6 +66,15 @@ dmmFitNaive <- function(hto, clusterInit, tol = 10^-5,
         )
     }
 
+    # Underdispersion maybe observed when HTO data unimodel or poor
+    # cluster initialization
+    if (theta1 < 0) {
+        theta1 <- Inf
+    }
+    if (theta2 < 0) {
+        theta2 <- Inf
+    }
+    
     # Check validity of distribution parameters
     if (any(is.na(dnbinom(hto, mu = mu1, size = theta1))) |
         any(is.na(dnbinom(hto, mu = mu2, size = theta2)))) {
@@ -101,9 +111,15 @@ dmmFitNaive <- function(hto, clusterInit, tol = 10^-5,
         mu1 <- sum(w[, 1] * hto)
         var1 <- sum(w[, 1] * (hto - mu1)^2)
         theta1 <- mu1^2 / (var1 - mu1)
+        if (theta1 < 0) { # underdispersion positive component
+            theta1 <- Inf
+        }
         mu2 <- sum(w[, 2] * hto)
         var2 <- sum(w[, 2] * (hto - mu2)^2)
         theta2 <- mu2^2 / (var2 - mu2)
+        if (theta2 < 0) { # underdispersion negative component
+          theta2 <- Inf
+        }
 
         # Update counter and keep some logs
         iter <- iter + 1
@@ -124,19 +140,28 @@ dmmFitNaive <- function(hto, clusterInit, tol = 10^-5,
         )
     }
 
-    if (!iter < maxIter) {
+    converged <- iter < maxIter
+    if (!converged) {
         warning("Maximum number of iterations reached before convergence (",
             htoId, ").",
             sep = ""
         )
     }
     rownames(logData) <- NULL
+    if (theta1 == Inf | theta2 == Inf) {
+        warning("Underdispersion observed for HTO \"", htoId, "\", suggesting ",
+                "a poor fit. Please check whether the distribution of the HTO ",
+                "is bimodal. Consider running demuxmix with a manual initial ",
+                "droplet assignment using the clusterInit parameter.")
+        converged <- FALSE
+    }
+    
 
     mixModel <- NaiveMixModel(
         mu1 = mu1, mu2 = mu2, theta1 = theta1, theta2 = theta2, pi = pi,
         hto = hto, htoId = htoId,
         parameters = list(tol = tol, maxIter = maxIter),
-        log = logData, converged = iter < maxIter
+        log = logData, converged = converged
     )
     return(mixModel)
 }
@@ -163,12 +188,22 @@ dmmFitReg <- function(hto, rna, clusterInit, regRnaNegComp = TRUE,
     var2 <- var(hto[!ind])
     theta1 <- mu1^2 / (var1 - mu1)
     theta2 <- mu2^2 / (var2 - mu2)
+    
     if (mu1 > mu2) {
         stop(
             "Mean count of cluster 1 must be smaller than mean of cluster 2. ",
             "Please swap cluster IDs in the clusterInit parameter for HTO ",
             htoId, "."
         )
+    }
+    
+    # Underdispersion maybe observed when HTO data unimodel or poor
+    # cluster initialization
+    if (theta1 < 0) {
+        theta1 <- Inf
+    }
+    if (theta2 < 0) {
+        theta2 <- Inf
     }
 
     # Check validity of distribution parameters
@@ -252,7 +287,8 @@ dmmFitReg <- function(hto, rna, clusterInit, regRnaNegComp = TRUE,
         )
     }
 
-    if (!iter < maxIter) {
+    converged <- iter < maxIter
+    if (!converged) {
         warning("Maximum number of iterations reached before convergence (",
             htoId, ").",
             sep = ""
@@ -267,7 +303,7 @@ dmmFitReg <- function(hto, rna, clusterInit, regRnaNegComp = TRUE,
             tol = tol,
             maxIter = maxIter
         ),
-        log = logData, converged = iter < maxIter
+        log = logData, converged = converged
     )
     return(mixModel)
 }
